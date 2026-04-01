@@ -143,6 +143,23 @@ class MonthFeedViewController: UIViewController {
             self?.onDismiss?()
         }
     }
+
+    private func showPlaybackPopup(entry: CDDiaryEntry) {
+        guard let window = view.window else { return }
+        let popup = PlaybackPopupView(fileNames: entry.audioFileNamesArray, timestamps: entry.audioTimestampsArray)
+        popup.delegate = self
+        popup.show(in: window)
+    }
+}
+
+// MARK: - PlaybackPopupDelegate
+
+extension MonthFeedViewController: PlaybackPopupDelegate {
+    func playbackPopupDidDelete(at index: Int) {
+        reloadAllEntries()
+    }
+
+    func playbackPopupDidDismiss() {}
 }
 
 // MARK: - UITableViewDataSource
@@ -161,6 +178,9 @@ extension MonthFeedViewController: UITableViewDataSource {
         let entry = groupedEntries[indexPath.section].entries[indexPath.row]
         let baby = CoreDataStack.shared.fetchBaby()
         cell.configure(entry: entry, baby: baby)
+        cell.onAudioTapped = { [weak self] entry in
+            self?.showPlaybackPopup(entry: entry)
+        }
         return cell
     }
 }
@@ -231,7 +251,9 @@ private class FeedEntryCell: UITableViewCell {
     private let dateBadge = DateBadgeView(text: "")
     private let dayCountLabel = UILabel()
     private let bodyTextLabel = UILabel()
-    private let audioIcon = UIImageView()
+    private let audioButton = UIButton(type: .system)
+    var onAudioTapped: ((CDDiaryEntry) -> Void)?
+    private var currentEntry: CDDiaryEntry?
 
     private var photoHeightConstraint: NSLayoutConstraint?
     private var bodyTopToPhoto: NSLayoutConstraint?
@@ -298,12 +320,16 @@ private class FeedEntryCell: UITableViewCell {
         bodyTextLabel.translatesAutoresizingMaskIntoConstraints = false
         bodyView.addSubview(bodyTextLabel)
 
-        audioIcon.image = UIImage(systemName: "waveform")
-        audioIcon.tintColor = DS.fgPale
-        audioIcon.contentMode = .scaleAspectFit
-        audioIcon.isHidden = true
-        audioIcon.translatesAutoresizingMaskIntoConstraints = false
-        bodyView.addSubview(audioIcon)
+        let waveConfig = UIImage.SymbolConfiguration(pointSize: 12)
+        audioButton.setImage(UIImage(systemName: "waveform", withConfiguration: waveConfig), for: .normal)
+        audioButton.tintColor = DS.fgMuted
+        audioButton.backgroundColor = DS.bgSubtle
+        audioButton.layer.cornerRadius = 12
+        audioButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        audioButton.isHidden = true
+        audioButton.addTarget(self, action: #selector(audioTapped), for: .touchUpInside)
+        audioButton.translatesAutoresizingMaskIntoConstraints = false
+        bodyView.addSubview(audioButton)
 
         photoHeightConstraint = photoImageView.heightAnchor.constraint(equalToConstant: cardWidth * 0.5)
         bodyTopToPhoto = bodyView.topAnchor.constraint(equalTo: photoImageView.bottomAnchor, constant: 10)
@@ -336,11 +362,9 @@ private class FeedEntryCell: UITableViewCell {
             bodyTextLabel.leadingAnchor.constraint(equalTo: bodyView.leadingAnchor),
             bodyTextLabel.trailingAnchor.constraint(equalTo: bodyView.trailingAnchor),
 
-            audioIcon.topAnchor.constraint(equalTo: bodyTextLabel.bottomAnchor, constant: 6),
-            audioIcon.trailingAnchor.constraint(equalTo: bodyView.trailingAnchor),
-            audioIcon.widthAnchor.constraint(equalToConstant: 16),
-            audioIcon.heightAnchor.constraint(equalToConstant: 16),
-            audioIcon.bottomAnchor.constraint(lessThanOrEqualTo: bodyView.bottomAnchor),
+            audioButton.topAnchor.constraint(equalTo: bodyTextLabel.bottomAnchor, constant: 6),
+            audioButton.trailingAnchor.constraint(equalTo: bodyView.trailingAnchor),
+            audioButton.bottomAnchor.constraint(lessThanOrEqualTo: bodyView.bottomAnchor),
         ])
     }
 
@@ -368,7 +392,19 @@ private class FeedEntryCell: UITableViewCell {
         bodyTextLabel.text = entry.text
         bodyTextLabel.isHidden = entry.text.isEmpty
 
-        audioIcon.isHidden = entry.audioFileNamesArray.isEmpty
+        currentEntry = entry
+        let audioNames = entry.audioFileNamesArray
+        audioButton.isHidden = audioNames.isEmpty
+        if !audioNames.isEmpty {
+            audioButton.setTitle(" \(audioNames.count)", for: .normal)
+            audioButton.setTitleColor(DS.fgMuted, for: .normal)
+            audioButton.titleLabel?.font = DS.font(11)
+        }
+    }
+
+    @objc private func audioTapped() {
+        guard let entry = currentEntry else { return }
+        onAudioTapped?(entry)
     }
 
     override func prepareForReuse() {
@@ -376,7 +412,8 @@ private class FeedEntryCell: UITableViewCell {
         photoImageView.image = nil
         photoImageView.isHidden = true
         bodyTextLabel.text = nil
-        audioIcon.isHidden = true
+        audioButton.isHidden = true
+        currentEntry = nil
         photoHeightConstraint?.isActive = false
         bodyTopToPhoto?.isActive = false
         bodyTopToCard?.isActive = true
