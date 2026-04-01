@@ -16,9 +16,25 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = DS.bgBase
+        setupSegmentBar()
         setupSegmentedControl()
         setupContainer()
         showTab(0)
+    }
+
+    private let segmentBar = UIView()
+
+    private func setupSegmentBar() {
+        segmentBar.backgroundColor = DS.bgBase
+        segmentBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(segmentBar)
+
+        NSLayoutConstraint.activate([
+            segmentBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            segmentBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            segmentBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            segmentBar.heightAnchor.constraint(equalToConstant: 44),
+        ])
     }
 
     private func setupSegmentedControl() {
@@ -56,7 +72,7 @@ class HomeViewController: UIViewController {
         hStack.axis = .horizontal
         hStack.distribution = .fillEqually
         hStack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(hStack)
+        segmentBar.addSubview(hStack)
 
         NSLayoutConstraint.activate([
             todayIndicator.widthAnchor.constraint(equalToConstant: 52),
@@ -64,12 +80,10 @@ class HomeViewController: UIViewController {
             allIndicator.widthAnchor.constraint(equalToConstant: 52),
             allIndicator.heightAnchor.constraint(equalToConstant: 4),
 
-            hStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-            hStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 80),
-            hStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -80),
+            hStack.centerYAnchor.constraint(equalTo: segmentBar.centerYAnchor),
+            hStack.leadingAnchor.constraint(equalTo: segmentBar.leadingAnchor, constant: 80),
+            hStack.trailingAnchor.constraint(equalTo: segmentBar.trailingAnchor, constant: -80),
         ])
-
-        segmentStack.addArrangedSubview(hStack)
     }
 
     private func setupContainer() {
@@ -114,6 +128,8 @@ class HomeViewController: UIViewController {
         childVC.view.frame = containerView.bounds
         childVC.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         childVC.didMove(toParent: self)
+
+        view.bringSubviewToFront(segmentBar)
     }
 
     @objc private func todayTapped() {
