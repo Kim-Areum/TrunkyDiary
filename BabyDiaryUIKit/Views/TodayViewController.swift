@@ -426,7 +426,7 @@ class TodayViewController: UIViewController {
         ])
 
         // Diary text
-        diaryTextLabel.font = DS.font(13)
+        diaryTextLabel.font = DS.font(14)
         diaryTextLabel.textColor = DS.fgStrong
         diaryTextLabel.numberOfLines = 0
         diaryTextLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -505,7 +505,7 @@ class TodayViewController: UIViewController {
         attString.append(NSAttributedString(
             string: "  \(title)",
             attributes: [
-                .font: DS.font(13),
+                .font: DS.font(15),
                 .foregroundColor: DS.fgStrong,
             ]
         ))

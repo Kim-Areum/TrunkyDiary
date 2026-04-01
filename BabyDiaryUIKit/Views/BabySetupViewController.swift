@@ -234,7 +234,7 @@ class BabySetupViewController: UIViewController {
 
     private func setupStartButton() {
         startButton.setTitle("시작하기", for: .normal)
-        startButton.titleLabel?.font = DS.font(13)
+        startButton.titleLabel?.font = DS.font(15)
         startButton.layer.cornerRadius = 22
         startButton.clipsToBounds = true
         startButton.addTarget(self, action: #selector(startTapped), for: .touchUpInside)

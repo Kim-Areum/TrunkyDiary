@@ -114,7 +114,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         // Right: 저장 button (custom styled)
         let saveLabel = UILabel()
         saveLabel.text = "저장"
-        saveLabel.font = DS.font(13)
+        saveLabel.font = DS.font(15)
         saveLabel.textColor = DS.fgStrong
 
         let saveBg = UIView()
@@ -385,11 +385,11 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         cardBodyView.addSubview(textContainer)
 
         placeholderLabel.text = "오늘 우리 아기와의 하루는 어땠나요?"
-        placeholderLabel.font = DS.font(13)
+        placeholderLabel.font = DS.font(14)
         placeholderLabel.textColor = DS.fgPale
         placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        textView.font = DS.font(13)
+        textView.font = DS.font(14)
         textView.textColor = DS.fgStrong
         textView.backgroundColor = .clear
         textView.isScrollEnabled = true
@@ -615,7 +615,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         config.imagePadding = 6
         config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var attrs = incoming
-            attrs.font = DS.font(13)
+            attrs.font = DS.font(15)
             return attrs
         }
         recordButton.configuration = config

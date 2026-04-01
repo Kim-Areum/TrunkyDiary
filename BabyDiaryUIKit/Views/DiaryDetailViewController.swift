@@ -144,7 +144,7 @@ class DiaryDetailViewController: UIViewController {
         ])
 
         // Text label
-        textLabel.font = DS.font(13)
+        textLabel.font = DS.font(14)
         textLabel.textColor = DS.fgStrong
         textLabel.numberOfLines = 0
         let paragraphStyle = NSMutableParagraphStyle()
@@ -220,7 +220,7 @@ class DiaryDetailViewController: UIViewController {
             textLabel.attributedText = NSAttributedString(
                 string: displayText,
                 attributes: [
-                    .font: DS.font(13),
+                    .font: DS.font(14),
                     .foregroundColor: DS.fgStrong,
                     .paragraphStyle: paragraphStyle,
                 ]

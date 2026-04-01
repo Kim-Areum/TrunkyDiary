@@ -287,7 +287,7 @@ class MinibookViewController: UIViewController {
 
         let titleLabel = UILabel()
         titleLabel.text = "목차"
-        titleLabel.font = DS.font(13)
+        titleLabel.font = DS.font(17)
         titleLabel.textColor = DS.fgStrong
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -311,7 +311,7 @@ class MinibookViewController: UIViewController {
 
             let monthLabel = UILabel()
             monthLabel.text = formatMonthAge(item.month)
-            monthLabel.font = DS.font(13)
+            monthLabel.font = DS.font(14)
             monthLabel.textColor = DS.fgStrong
             monthLabel.translatesAutoresizingMaskIntoConstraints = false
 
@@ -329,7 +329,7 @@ class MinibookViewController: UIViewController {
             } else {
                 pageRangeLabel.text = "\(item.firstPage)~\(item.lastPage)"
             }
-            pageRangeLabel.font = DS.font(13)
+            pageRangeLabel.font = DS.font(14)
             pageRangeLabel.textColor = DS.fgPale
             pageRangeLabel.textAlignment = .right
             pageRangeLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -468,7 +468,7 @@ class MinibookViewController: UIViewController {
         let baby = CoreDataStack.shared.fetchBaby()
         let titleLabel = UILabel()
         titleLabel.text = "\(baby?.name ?? "")의 일기"
-        titleLabel.font = DS.font(15)
+        titleLabel.font = DS.font(17)
         titleLabel.textColor = DS.fgStrong
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         pageView.addSubview(titleLabel)
@@ -561,13 +561,13 @@ class MinibookViewController: UIViewController {
         // Text
         if !textSlice.isEmpty {
             let textLabel = UILabel()
-            textLabel.font = DS.font(13)
+            textLabel.font = DS.font(14)
             textLabel.textColor = DS.fgStrong
             textLabel.numberOfLines = 0
             let paragraphStyle = NSMutableParagraphStyle()
             paragraphStyle.lineSpacing = 6
             textLabel.attributedText = NSAttributedString(string: textSlice, attributes: [
-                .font: DS.font(13),
+                .font: DS.font(14),
                 .foregroundColor: DS.fgStrong,
                 .paragraphStyle: paragraphStyle,
             ])
@@ -600,13 +600,13 @@ class MinibookViewController: UIViewController {
         pageView.clipsToBounds = true
 
         let textLabel = UILabel()
-        textLabel.font = DS.font(13)
+        textLabel.font = DS.font(14)
         textLabel.textColor = DS.fgStrong
         textLabel.numberOfLines = 0
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineSpacing = 6
         textLabel.attributedText = NSAttributedString(string: textSlice, attributes: [
-            .font: DS.font(13),
+            .font: DS.font(14),
             .foregroundColor: DS.fgStrong,
             .paragraphStyle: paragraphStyle,
         ])
@@ -840,7 +840,7 @@ class MinibookViewController: UIViewController {
                 }
                 let title = "\(baby?.name ?? "")의 일기"
                 let titleAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(15),
+                    .font: DS.font(17),
                     .foregroundColor: DS.fgStrong,
                 ]
                 let titleSize = (title as NSString).size(withAttributes: titleAttrs)
@@ -850,7 +850,7 @@ class MinibookViewController: UIViewController {
             case .tableOfContents(let items):
                 let tocTitle = "목차"
                 let tocTitleAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(13),
+                    .font: DS.font(17),
                     .foregroundColor: DS.fgStrong,
                 ]
                 let tocTitleSize = (tocTitle as NSString).size(withAttributes: tocTitleAttrs)
@@ -858,11 +858,11 @@ class MinibookViewController: UIViewController {
 
                 var tocY: CGFloat = margin + tocTitleSize.height + 16
                 let itemAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(13),
+                    .font: DS.font(14),
                     .foregroundColor: DS.fgStrong,
                 ]
                 let numAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(13),
+                    .font: DS.font(14),
                     .foregroundColor: DS.fgPale,
                 ]
                 for item in items {
@@ -935,7 +935,7 @@ class MinibookViewController: UIViewController {
                     let paragraphStyle = NSMutableParagraphStyle()
                     paragraphStyle.lineSpacing = 6
                     let textAttrs: [NSAttributedString.Key: Any] = [
-                        .font: DS.font(13),
+                        .font: DS.font(14),
                         .foregroundColor: DS.fgStrong,
                         .paragraphStyle: paragraphStyle,
                     ]
@@ -955,7 +955,7 @@ class MinibookViewController: UIViewController {
                 let paragraphStyle = NSMutableParagraphStyle()
                 paragraphStyle.lineSpacing = 6
                 let textAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(13),
+                    .font: DS.font(14),
                     .foregroundColor: DS.fgStrong,
                     .paragraphStyle: paragraphStyle,
                 ]

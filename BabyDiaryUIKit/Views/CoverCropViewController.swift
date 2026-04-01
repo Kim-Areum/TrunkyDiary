@@ -47,14 +47,14 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
 
         let titleLabel = UILabel()
         titleLabel.text = "사진 편집"
-        titleLabel.font = DS.font(15)
+        titleLabel.font = DS.font(17)
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let saveButton = UIButton(type: .system)
         saveButton.setTitle("저장", for: .normal)
-        saveButton.titleLabel?.font = DS.font(13)
+        saveButton.titleLabel?.font = DS.font(15)
         saveButton.setTitleColor(DS.fgStrong, for: .normal)
         saveButton.backgroundColor = DS.blue
         saveButton.layer.cornerRadius = 15
