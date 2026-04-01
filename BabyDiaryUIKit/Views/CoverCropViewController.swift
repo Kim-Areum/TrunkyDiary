@@ -55,7 +55,7 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         let saveButton = UIButton(type: .system)
         saveButton.setTitle("저장", for: .normal)
         saveButton.titleLabel?.font = DS.font(14)
-        saveButton.setTitleColor(.white, for: .normal)
+        saveButton.setTitleColor(DS.fgStrong, for: .normal)
         saveButton.backgroundColor = DS.blue
         saveButton.layer.cornerRadius = 15
         saveButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)

@@ -290,6 +290,9 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         placeholderConfig.attributedTitle = attrTitle
         photoPlaceholderButton.configuration = placeholderConfig
         photoPlaceholderButton.backgroundColor = DS.bgSubtle
+        photoPlaceholderButton.layer.cornerRadius = 8
+        photoPlaceholderButton.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        photoPlaceholderButton.clipsToBounds = true
         photoPlaceholderButton.addTarget(self, action: #selector(showPhotoPicker), for: .touchUpInside)
 
         NSLayoutConstraint.activate([
