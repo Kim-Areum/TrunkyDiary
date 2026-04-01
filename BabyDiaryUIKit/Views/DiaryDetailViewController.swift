@@ -200,7 +200,7 @@ class DiaryDetailViewController: UIViewController {
 
         // Date badge & day count
         dateBadge.update(text: entry.formattedDate)
-        dayCountLabel.text = "D+\(baby.dayCountAt(date: entry.date))"
+        dayCountLabel.text = baby.dayAndMonthAt(date: entry.date)
 
         // Text
         updateTextDisplay()

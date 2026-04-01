@@ -41,4 +41,20 @@ extension CDBaby {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<CDBaby> {
         NSFetchRequest<CDBaby>(entityName: "CDBaby")
     }
+
+    /// "D+284, 9개월" 형식
+    func dayAndMonthAt(date: Date) -> String {
+        let days = dayCountAt(date: date)
+        let months = Calendar.current.dateComponents([.month], from: birthDate, to: date).month ?? 0
+        if months <= 0 {
+            return "D+\(days)"
+        }
+        return "D+\(days), \(months)개월"
+    }
+
+    /// "D+284, 9개월 12일" 형식 (설정용)
+    var dayAndMonthDetailed: String {
+        let days = dayCount
+        return "D+\(days), \(monthAndDays)"
+    }
 }

@@ -7,7 +7,7 @@ class MinibookViewController: UIViewController {
 
     private enum PageContent {
         case cover
-        case tableOfContents(items: [(month: Int, pageNum: Int)])
+        case tableOfContents(items: [(month: Int, firstPage: Int, lastPage: Int)])
         case entryFirst(entry: CDDiaryEntry, textSlice: String, pageNum: Int)
         case entryContinuation(entry: CDDiaryEntry, textSlice: String, pageNum: Int)
         case empty
@@ -75,8 +75,9 @@ class MinibookViewController: UIViewController {
             // 1단계: 엔트리 페이지 빌드 (pageNum 계산)
             var entryPages: [PageContent] = []
             var pageNum = 1
-            // 개월수 → 첫 페이지 번호 매핑
+            // 개월수 → 첫/마지막 페이지 번호 매핑
             var monthToFirstPage: [Int: Int] = [:]
+            var monthToLastPage: [Int: Int] = [:]
             let baby = CoreDataStack.shared.fetchBaby()
 
             for entry in validEntries {
@@ -92,16 +93,19 @@ class MinibookViewController: UIViewController {
 
                 if text.count <= maxFirst {
                     entryPages.append(.entryFirst(entry: entry, textSlice: text, pageNum: pageNum))
+                    monthToLastPage[monthAge] = pageNum
                     pageNum += 1
                 } else {
                     let firstText = splitAtWordBoundary(text, limit: maxFirst)
                     entryPages.append(.entryFirst(entry: entry, textSlice: firstText, pageNum: pageNum))
+                    monthToLastPage[monthAge] = pageNum
                     pageNum += 1
 
                     var remaining = String(text.dropFirst(firstText.count))
                     while !remaining.isEmpty {
                         let chunk = splitAtWordBoundary(remaining, limit: continuationChars)
                         entryPages.append(.entryContinuation(entry: entry, textSlice: chunk, pageNum: pageNum))
+                        monthToLastPage[monthAge] = pageNum
                         pageNum += 1
                         remaining = String(remaining.dropFirst(chunk.count))
                     }
@@ -110,7 +114,7 @@ class MinibookViewController: UIViewController {
 
             // 2단계: 목차 생성
             let tocItems = monthToFirstPage.sorted { $0.key < $1.key }
-                .map { (month: $0.key, pageNum: $0.value) }
+                .map { (month: $0.key, firstPage: $0.value, lastPage: monthToLastPage[$0.key] ?? $0.value) }
             pages.append(.tableOfContents(items: tocItems))
 
             // 3단계: 엔트리 페이지 추가
@@ -118,6 +122,22 @@ class MinibookViewController: UIViewController {
         }
 
         pages.append(.backCover)
+    }
+
+    private func formatMonthAge(_ month: Int) -> String {
+        if month == 0 {
+            return "신생아"
+        } else if month <= 24 {
+            return "\(month)개월"
+        } else {
+            let years = month / 12
+            let remainingMonths = month % 12
+            if remainingMonths == 0 {
+                return "\(years)세"
+            } else {
+                return "\(years)세 \(remainingMonths)개월"
+            }
+        }
     }
 
     private func monthsBetween(from birthDate: Date, to date: Date) -> Int {
@@ -262,10 +282,9 @@ class MinibookViewController: UIViewController {
 
     // MARK: - Table of Contents
 
-    private func renderTocPage(items: [(month: Int, pageNum: Int)], width: CGFloat, height: CGFloat) {
+    private func renderTocPage(items: [(month: Int, firstPage: Int, lastPage: Int)], width: CGFloat, height: CGFloat) {
         let pageView = makePageView(width: width, height: height)
 
-        // 타이틀
         let titleLabel = UILabel()
         titleLabel.text = "목차"
         titleLabel.font = DS.font(13)
@@ -274,7 +293,6 @@ class MinibookViewController: UIViewController {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         pageView.addSubview(titleLabel)
 
-        // 목차 스크롤뷰
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -289,37 +307,36 @@ class MinibookViewController: UIViewController {
         for item in items {
             let row = UIView()
             row.translatesAutoresizingMaskIntoConstraints = false
+            row.isUserInteractionEnabled = true
 
             let monthLabel = UILabel()
-            if item.month == 0 {
-                monthLabel.text = "신생아"
-            } else {
-                monthLabel.text = "\(item.month)개월"
-            }
+            monthLabel.text = formatMonthAge(item.month)
             monthLabel.font = DS.font(13)
             monthLabel.textColor = DS.fgStrong
             monthLabel.translatesAutoresizingMaskIntoConstraints = false
 
             let dotLine = UIView()
             dotLine.translatesAutoresizingMaskIntoConstraints = false
-
-            // 점선
             let dotLayer = CAShapeLayer()
             dotLayer.strokeColor = DS.fgPale.cgColor
             dotLayer.lineDashPattern = [2, 3]
             dotLayer.lineWidth = 0.5
             dotLine.layer.addSublayer(dotLayer)
 
-            let pageNumLabel = UILabel()
-            pageNumLabel.text = "\(item.pageNum)"
-            pageNumLabel.font = DS.font(8)
-            pageNumLabel.textColor = DS.fgPale
-            pageNumLabel.textAlignment = .right
-            pageNumLabel.translatesAutoresizingMaskIntoConstraints = false
+            let pageRangeLabel = UILabel()
+            if item.firstPage == item.lastPage {
+                pageRangeLabel.text = "\(item.firstPage)"
+            } else {
+                pageRangeLabel.text = "\(item.firstPage)~\(item.lastPage)"
+            }
+            pageRangeLabel.font = DS.font(10)
+            pageRangeLabel.textColor = DS.fgPale
+            pageRangeLabel.textAlignment = .right
+            pageRangeLabel.translatesAutoresizingMaskIntoConstraints = false
 
             row.addSubview(monthLabel)
             row.addSubview(dotLine)
-            row.addSubview(pageNumLabel)
+            row.addSubview(pageRangeLabel)
 
             NSLayoutConstraint.activate([
                 row.heightAnchor.constraint(equalToConstant: 28),
@@ -327,22 +344,26 @@ class MinibookViewController: UIViewController {
                 monthLabel.centerYAnchor.constraint(equalTo: row.centerYAnchor),
 
                 dotLine.leadingAnchor.constraint(equalTo: monthLabel.trailingAnchor, constant: 6),
-                dotLine.trailingAnchor.constraint(equalTo: pageNumLabel.leadingAnchor, constant: -6),
+                dotLine.trailingAnchor.constraint(equalTo: pageRangeLabel.leadingAnchor, constant: -6),
                 dotLine.centerYAnchor.constraint(equalTo: row.centerYAnchor),
                 dotLine.heightAnchor.constraint(equalToConstant: 1),
 
-                pageNumLabel.trailingAnchor.constraint(equalTo: row.trailingAnchor),
-                pageNumLabel.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-                pageNumLabel.widthAnchor.constraint(equalToConstant: 24),
+                pageRangeLabel.trailingAnchor.constraint(equalTo: row.trailingAnchor),
+                pageRangeLabel.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+                pageRangeLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 30),
             ])
 
-            // 점선 path는 layoutSubviews에서 설정해야 하지만, 간단히 고정 폭으로
             DispatchQueue.main.async {
                 let path = UIBezierPath()
                 path.move(to: CGPoint(x: 0, y: 0.5))
                 path.addLine(to: CGPoint(x: dotLine.bounds.width, y: 0.5))
                 dotLayer.path = path.cgPath
             }
+
+            // 탭하면 해당 페이지로 이동 (겉표지 + 목차 = 2페이지 오프셋)
+            let tap = UITapGestureRecognizer(target: self, action: #selector(tocItemTapped(_:)))
+            row.tag = item.firstPage + 1 // +1 for 목차 페이지 자체
+            row.addGestureRecognizer(tap)
 
             tocStack.addArrangedSubview(row)
         }
@@ -362,6 +383,15 @@ class MinibookViewController: UIViewController {
             tocStack.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             tocStack.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
         ])
+    }
+
+    @objc private func tocItemTapped(_ gesture: UITapGestureRecognizer) {
+        guard let row = gesture.view else { return }
+        let targetPage = row.tag // 겉표지(0) + 목차(1) + firstPage offset
+        if targetPage < pages.count {
+            currentPage = targetPage
+            renderCurrentPage()
+        }
     }
 
     // MARK: - Page Rendering Helpers
@@ -502,7 +532,7 @@ class MinibookViewController: UIViewController {
                 imageView.topAnchor.constraint(equalTo: pageView.topAnchor, constant: 16),
                 imageView.leadingAnchor.constraint(equalTo: pageView.leadingAnchor, constant: 16),
                 imageView.trailingAnchor.constraint(equalTo: pageView.trailingAnchor, constant: -16),
-                imageView.heightAnchor.constraint(equalToConstant: width * 0.56),
+                imageView.heightAnchor.constraint(equalToConstant: width * 0.65),
             ])
             topAnchor = imageView.bottomAnchor
             topConstant = 10
@@ -515,7 +545,7 @@ class MinibookViewController: UIViewController {
         pageView.addSubview(dateBadge)
 
         let dayCountLabel = UILabel()
-        dayCountLabel.text = "D+\(baby?.dayCountAt(date: entry.date) ?? 0)"
+        dayCountLabel.text = baby?.dayAndMonthAt(date: entry.date) ?? ""
         dayCountLabel.font = DS.font(9)
         dayCountLabel.textColor = DS.fgPale
         dayCountLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -753,6 +783,9 @@ class MinibookViewController: UIViewController {
         let babyName = baby?.name ?? "아기"
         let allPages = pages
 
+        // 미리보기와 동일한 크기로 렌더링 후 PDF에 맞춤
+        let renderW = UIScreen.main.bounds.width * 0.8
+        let renderH = renderW * 128.0 / 94.0
         let pdfW: CGFloat = 94 * 3
         let pdfH: CGFloat = 128 * 3
         let pageRect = CGRect(x: 0, y: 0, width: pdfW, height: pdfH)
@@ -765,7 +798,9 @@ class MinibookViewController: UIViewController {
                 for page in allPages {
                     context.beginPage()
 
-                    let image = self.renderPageToImage(page: page, size: CGSize(width: pdfW, height: pdfH))
+                    // 미리보기 크기로 렌더링
+                    let image = self.renderPageToImage(page: page, size: CGSize(width: renderW, height: renderH))
+                    // PDF 크기에 맞춰 그리기
                     image?.draw(in: pageRect)
                 }
             }
@@ -795,7 +830,7 @@ class MinibookViewController: UIViewController {
             context.fill(rect)
 
             let baby = CoreDataStack.shared.fetchBaby()
-            let margin: CGFloat = 48
+            let margin: CGFloat = 16
             let textRect = rect.insetBy(dx: margin, dy: margin)
 
             switch page {
@@ -805,142 +840,141 @@ class MinibookViewController: UIViewController {
                 }
                 let title = "\(baby?.name ?? "")의 일기"
                 let titleAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(54),
+                    .font: DS.font(18),
                     .foregroundColor: DS.fgStrong,
                 ]
                 let titleSize = (title as NSString).size(withAttributes: titleAttrs)
-                let titlePoint = CGPoint(x: (size.width - titleSize.width) / 2, y: size.height - 90)
+                let titlePoint = CGPoint(x: (size.width - titleSize.width) / 2, y: size.height - 30)
                 (title as NSString).draw(at: titlePoint, withAttributes: titleAttrs)
 
             case .tableOfContents(let items):
-                // 목차 PDF 렌더링
                 let tocTitle = "목차"
                 let tocTitleAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(48),
+                    .font: DS.font(13),
                     .foregroundColor: DS.fgStrong,
                 ]
                 let tocTitleSize = (tocTitle as NSString).size(withAttributes: tocTitleAttrs)
-                (tocTitle as NSString).draw(at: CGPoint(x: (size.width - tocTitleSize.width) / 2, y: margin), withAttributes: tocTitleAttrs)
+                (tocTitle as NSString).draw(at: CGPoint(x: (size.width - tocTitleSize.width) / 2, y: margin + 4), withAttributes: tocTitleAttrs)
 
-                var tocY: CGFloat = margin + tocTitleSize.height + 48
+                var tocY: CGFloat = margin + tocTitleSize.height + 16
                 let itemAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(36),
+                    .font: DS.font(13),
                     .foregroundColor: DS.fgStrong,
                 ]
                 let numAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(33),
+                    .font: DS.font(10),
                     .foregroundColor: DS.fgPale,
                 ]
                 for item in items {
-                    let label = item.month == 0 ? "신생아" : "\(item.month)개월"
-                    (label as NSString).draw(at: CGPoint(x: margin, y: tocY), withAttributes: itemAttrs)
-                    let numStr = "\(item.pageNum)"
+                    let label = formatMonthAge(item.month)
+                    (label as NSString).draw(at: CGPoint(x: margin + 4, y: tocY), withAttributes: itemAttrs)
+                    let numStr = item.firstPage == item.lastPage ? "\(item.firstPage)" : "\(item.firstPage)~\(item.lastPage)"
                     let numSize = (numStr as NSString).size(withAttributes: numAttrs)
-                    (numStr as NSString).draw(at: CGPoint(x: size.width - margin - numSize.width, y: tocY), withAttributes: numAttrs)
-                    tocY += 64
+                    (numStr as NSString).draw(at: CGPoint(x: size.width - margin - 4 - numSize.width, y: tocY + 2), withAttributes: numAttrs)
+                    tocY += 22
                 }
 
             case .entryFirst(let entry, let textSlice, let num):
                 var yOffset: CGFloat = margin
 
                 if let data = entry.photoData, let image = UIImage(data: data) {
-                    let photoHeight = size.width * 0.56
+                    let photoHeight = (size.width - margin * 2) * 0.65
                     let photoRect = CGRect(x: margin, y: yOffset, width: size.width - margin * 2, height: photoHeight)
                     image.draw(in: photoRect)
-                    yOffset += photoHeight + 30
+                    yOffset += photoHeight + 10
                 }
 
                 let dateAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(33),
+                    .font: DS.font(11),
                     .foregroundColor: DS.fgNeutral,
                 ]
                 (entry.formattedDate as NSString).draw(at: CGPoint(x: margin, y: yOffset), withAttributes: dateAttrs)
 
-                let dText = "D+\(baby?.dayCountAt(date: entry.date) ?? 0)"
+                let dText = baby?.dayAndMonthAt(date: entry.date) ?? ""
                 let dAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(27),
+                    .font: DS.font(9),
                     .foregroundColor: DS.fgPale,
                 ]
                 let dSize = (dText as NSString).size(withAttributes: dAttrs)
-                (dText as NSString).draw(at: CGPoint(x: size.width - margin - dSize.width, y: yOffset), withAttributes: dAttrs)
-                yOffset += 50
+                (dText as NSString).draw(at: CGPoint(x: size.width - margin - dSize.width, y: yOffset + 2), withAttributes: dAttrs)
+                yOffset += 20
 
                 if !textSlice.isEmpty {
                     let paragraphStyle = NSMutableParagraphStyle()
-                    paragraphStyle.lineSpacing = 18
+                    paragraphStyle.lineSpacing = 6
                     let textAttrs: [NSAttributedString.Key: Any] = [
-                        .font: DS.font(33),
+                        .font: DS.font(11),
                         .foregroundColor: DS.fgStrong,
                         .paragraphStyle: paragraphStyle,
                     ]
-                    let textDrawRect = CGRect(x: margin, y: yOffset, width: textRect.width, height: size.height - yOffset - 50)
+                    let textDrawRect = CGRect(x: margin, y: yOffset, width: textRect.width, height: size.height - yOffset - 20)
                     (textSlice as NSString).draw(in: textDrawRect, withAttributes: textAttrs)
                 }
 
-                let numAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(27),
+                let pnAttrs: [NSAttributedString.Key: Any] = [
+                    .font: DS.font(9),
                     .foregroundColor: DS.fgPale,
                 ]
                 let numText = "\(num)"
-                let numSize = (numText as NSString).size(withAttributes: numAttrs)
-                (numText as NSString).draw(at: CGPoint(x: size.width - margin - numSize.width, y: size.height - margin), withAttributes: numAttrs)
+                let numSize = (numText as NSString).size(withAttributes: pnAttrs)
+                (numText as NSString).draw(at: CGPoint(x: size.width - margin - numSize.width, y: size.height - margin), withAttributes: pnAttrs)
 
             case .entryContinuation(_, let textSlice, let num):
                 let paragraphStyle = NSMutableParagraphStyle()
-                paragraphStyle.lineSpacing = 18
+                paragraphStyle.lineSpacing = 6
                 let textAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(33),
+                    .font: DS.font(11),
                     .foregroundColor: DS.fgStrong,
                     .paragraphStyle: paragraphStyle,
                 ]
                 let textDrawRect = CGRect(x: margin, y: margin, width: textRect.width, height: size.height - margin * 2 - 30)
                 (textSlice as NSString).draw(in: textDrawRect, withAttributes: textAttrs)
 
-                let numAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(27),
+                let pnAttrs2: [NSAttributedString.Key: Any] = [
+                    .font: DS.font(9),
                     .foregroundColor: DS.fgPale,
                 ]
                 let numText = "\(num)"
-                let numSize = (numText as NSString).size(withAttributes: numAttrs)
-                (numText as NSString).draw(at: CGPoint(x: size.width - margin - numSize.width, y: size.height - margin), withAttributes: numAttrs)
+                let numSize = (numText as NSString).size(withAttributes: pnAttrs2)
+                (numText as NSString).draw(at: CGPoint(x: size.width - margin - numSize.width, y: size.height - margin), withAttributes: pnAttrs2)
 
             case .empty:
                 let emptyAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(42),
+                    .font: DS.font(14),
                     .foregroundColor: DS.fgPale,
                 ]
                 let text1 = "아직 기록이 없어요."
                 let text2 = "오늘부터 시작해보세요!"
                 let text1Size = (text1 as NSString).size(withAttributes: emptyAttrs)
                 let text2Size = (text2 as NSString).size(withAttributes: emptyAttrs)
-                (text1 as NSString).draw(at: CGPoint(x: (size.width - text1Size.width) / 2, y: size.height / 2 - 30), withAttributes: emptyAttrs)
-                (text2 as NSString).draw(at: CGPoint(x: (size.width - text2Size.width) / 2, y: size.height / 2 + 20), withAttributes: emptyAttrs)
+                (text1 as NSString).draw(at: CGPoint(x: (size.width - text1Size.width) / 2, y: size.height / 2 - 15), withAttributes: emptyAttrs)
+                (text2 as NSString).draw(at: CGPoint(x: (size.width - text2Size.width) / 2, y: size.height / 2 + 10), withAttributes: emptyAttrs)
 
             case .backCover:
                 if let data = baby?.photoData, let image = UIImage(data: data) {
-                    let photoSize: CGFloat = 180
-                    let photoRect = CGRect(x: (size.width - photoSize) / 2, y: size.height / 2 - 100, width: photoSize, height: photoSize)
+                    let photoSize: CGFloat = 60
+                    let photoRect = CGRect(x: (size.width - photoSize) / 2, y: size.height / 2 - 50, width: photoSize, height: photoSize)
                     let path = UIBezierPath(roundedRect: photoRect, cornerRadius: photoSize / 2)
                     path.addClip()
                     image.draw(in: photoRect)
                 }
                 let titleAttrs: [NSAttributedString.Key: Any] = [
-                    .font: DS.font(42),
+                    .font: DS.font(14),
                     .foregroundColor: DS.fgMuted,
                 ]
                 let title = "\(baby?.name ?? "")의 일기"
                 let titleSize = (title as NSString).size(withAttributes: titleAttrs)
-                (title as NSString).draw(at: CGPoint(x: (size.width - titleSize.width) / 2, y: size.height / 2 + 100), withAttributes: titleAttrs)
+                (title as NSString).draw(at: CGPoint(x: (size.width - titleSize.width) / 2, y: size.height / 2 + 30), withAttributes: titleAttrs)
 
-                let innerPages = pages.count - 2
+                let innerPages = pages.count - 3
                 if innerPages > 0 {
                     let countAttrs: [NSAttributedString.Key: Any] = [
-                        .font: DS.font(33),
+                        .font: DS.font(11),
                         .foregroundColor: DS.fgPale,
                     ]
                     let countText = "총 \(innerPages)쪽"
                     let countSize = (countText as NSString).size(withAttributes: countAttrs)
-                    (countText as NSString).draw(at: CGPoint(x: (size.width - countSize.width) / 2, y: size.height / 2 + 150), withAttributes: countAttrs)
+                    (countText as NSString).draw(at: CGPoint(x: (size.width - countSize.width) / 2, y: size.height / 2 + 50), withAttributes: countAttrs)
                 }
             }
         }

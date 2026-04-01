@@ -335,7 +335,7 @@ private class FeedEntryCell: UITableViewCell {
         audioButton.translatesAutoresizingMaskIntoConstraints = false
         bodyView.addSubview(audioButton)
 
-        photoHeightConstraint = photoImageView.heightAnchor.constraint(equalToConstant: cardWidth * 0.5)
+        photoHeightConstraint = photoImageView.heightAnchor.constraint(equalToConstant: cardWidth * 0.65)
         bodyTopToPhoto = bodyView.topAnchor.constraint(equalTo: photoImageView.bottomAnchor, constant: 10)
         bodyTopToCard = bodyView.topAnchor.constraint(equalTo: innerClip.topAnchor, constant: 14)
 
@@ -390,7 +390,7 @@ private class FeedEntryCell: UITableViewCell {
         dateBadge.update(text: entry.formattedDate)
 
         if let baby = baby {
-            dayCountLabel.text = "D+\(baby.dayCountAt(date: entry.date))"
+            dayCountLabel.text = baby.dayAndMonthAt(date: entry.date)
         }
 
         bodyTextLabel.text = entry.text

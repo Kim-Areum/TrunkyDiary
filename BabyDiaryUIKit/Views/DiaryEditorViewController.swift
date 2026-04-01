@@ -364,7 +364,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         dateBadge.update(text: formattedDate(date))
         dateBadge.translatesAutoresizingMaskIntoConstraints = false
 
-        dayCountLabel.text = "D+\(baby.dayCountAt(date: date))"
+        dayCountLabel.text = baby.dayAndMonthAt(date: date)
         dayCountLabel.font = DS.font(11)
         dayCountLabel.textColor = DS.fgPale
         dayCountLabel.translatesAutoresizingMaskIntoConstraints = false

@@ -525,7 +525,7 @@ class TodayViewController: UIViewController {
 
         // D+ count
         if let b = babyObj {
-            dayCountLabel.text = "D+\(b.dayCountAt(date: selectedDate))"
+            dayCountLabel.text = b.dayAndMonthAt(date: selectedDate)
         } else {
             dayCountLabel.text = ""
         }
