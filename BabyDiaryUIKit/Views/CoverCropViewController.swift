@@ -40,7 +40,7 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         view.addSubview(navContainer)
 
         let closeButton = UIButton(type: .system)
-        closeButton.setImage(UIImage(systemName: "xmark"), for: .normal)
+        closeButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
         closeButton.tintColor = .white
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
         closeButton.translatesAutoresizingMaskIntoConstraints = false
@@ -53,10 +53,10 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let saveButton = UIButton(type: .system)
-        saveButton.setTitle("저장", for: .normal)
+        saveButton.setTitle("완료", for: .normal)
         saveButton.titleLabel?.font = DS.font(15)
         saveButton.setTitleColor(DS.fgStrong, for: .normal)
-        saveButton.backgroundColor = DS.blue
+        saveButton.backgroundColor = DS.accent
         saveButton.layer.cornerRadius = 15
         saveButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
@@ -158,7 +158,7 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
     private func setupHint() {
         let hintLabel = UILabel()
         hintLabel.text = "핀치로 확대/축소, 드래그로 위치 조정"
-        hintLabel.font = DS.font(10)
+        hintLabel.font = DS.font(12)
         hintLabel.textColor = UIColor.white.withAlphaComponent(0.5)
         hintLabel.textAlignment = .center
         hintLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -200,6 +200,11 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         }
 
         onSave?(cropped)
-        dismiss(animated: true)
+        // 사진첩 + 크롭 에디터 한꺼번에 dismiss
+        if let picker = presentingViewController {
+            picker.dismiss(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
     }
 }

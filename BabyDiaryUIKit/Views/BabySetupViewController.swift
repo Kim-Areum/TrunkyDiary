@@ -262,6 +262,8 @@ class BabySetupViewController: UIViewController {
     @objc private func pickPhoto() {
         let picker = CustomPhotoPickerViewController()
         picker.delegate = self
+        picker.cropAspectRatio = 1.0
+        picker.modalPresentationStyle = .fullScreen
         present(picker, animated: true)
     }
 
@@ -329,10 +331,8 @@ class BabySetupViewController: UIViewController {
 
 extension BabySetupViewController: CustomPhotoPickerDelegate {
     func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
-        picker.dismiss(animated: true) { [weak self] in
-            self?.photoData = image.jpegData(compressionQuality: 0.8)
-            self?.updatePhotoUI()
-        }
+        photoData = image.jpegData(compressionQuality: 0.8)
+        updatePhotoUI()
     }
 }
 

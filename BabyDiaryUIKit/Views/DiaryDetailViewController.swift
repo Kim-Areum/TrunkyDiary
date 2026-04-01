@@ -144,7 +144,7 @@ class DiaryDetailViewController: UIViewController {
         ])
 
         // Text label
-        textLabel.font = DS.font(14)
+        textLabel.font = DS.font(15)
         textLabel.textColor = DS.fgStrong
         textLabel.numberOfLines = 0
         let paragraphStyle = NSMutableParagraphStyle()
@@ -220,7 +220,7 @@ class DiaryDetailViewController: UIViewController {
             textLabel.attributedText = NSAttributedString(
                 string: displayText,
                 attributes: [
-                    .font: DS.font(14),
+                    .font: DS.font(15),
                     .foregroundColor: DS.fgStrong,
                     .paragraphStyle: paragraphStyle,
                 ]
@@ -626,7 +626,7 @@ class DiaryDetailViewController: UIViewController {
             row.heightAnchor.constraint(equalToConstant: 48).isActive = true
 
             let playIcon = UIImageView(image: UIImage(systemName: "play.circle.fill")?.withConfiguration(UIImage.SymbolConfiguration(pointSize: 22)))
-            playIcon.tintColor = DS.blue
+            playIcon.tintColor = DS.accent
             playIcon.translatesAutoresizingMaskIntoConstraints = false
             row.addSubview(playIcon)
 

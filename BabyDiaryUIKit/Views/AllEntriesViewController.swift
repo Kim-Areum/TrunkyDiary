@@ -14,6 +14,8 @@ class AllEntriesViewController: UIViewController {
     private let nextButton = UIButton(type: .system)
     private var collectionView: UICollectionView!
 
+    private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+
     // MARK: - Init
 
     init() {
@@ -32,7 +34,9 @@ class AllEntriesViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = DS.bgBase
         setupMonthNavigation()
+        setupWeekdayHeader()
         setupCollectionView()
+        setupSwipeGestures()
         reloadEntries()
     }
 
@@ -60,7 +64,7 @@ class AllEntriesViewController: UIViewController {
         nextButton.addTarget(self, action: #selector(nextMonth), for: .touchUpInside)
         nextButton.translatesAutoresizingMaskIntoConstraints = false
 
-        monthLabel.font = DS.font(13)
+        monthLabel.font = DS.font(14)
         monthLabel.textColor = DS.fgStrong
         monthLabel.textAlignment = .center
         monthLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -90,27 +94,57 @@ class AllEntriesViewController: UIViewController {
         ])
     }
 
+    // MARK: - Weekday Header
+
+    private func setupWeekdayHeader() {
+        let headerStack = UIStackView()
+        headerStack.axis = .horizontal
+        headerStack.distribution = .fillEqually
+        headerStack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(headerStack)
+
+        for (index, day) in weekdays.enumerated() {
+            let label = UILabel()
+            label.text = day
+            label.font = DS.font(11)
+            label.textAlignment = .center
+            if index == 0 {
+                label.textColor = UIColor(hex: "D05050") // 일요일 빨간색
+            } else if index == 6 {
+                label.textColor = DS.accent // 토요일 파란색
+            } else {
+                label.textColor = DS.fgMuted
+            }
+            headerStack.addArrangedSubview(label)
+        }
+
+        NSLayoutConstraint.activate([
+            headerStack.topAnchor.constraint(equalTo: view.topAnchor, constant: 44),
+            headerStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            headerStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
+            headerStack.heightAnchor.constraint(equalToConstant: 30),
+        ])
+    }
+
     // MARK: - Collection View
 
     private func setupCollectionView() {
-        let spacing: CGFloat = 8
         let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = spacing
-        layout.minimumLineSpacing = spacing
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 12, bottom: 20, right: 12)
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 4
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = DS.bgBase
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register(DayCellView.self, forCellWithReuseIdentifier: DayCellView.reuseID)
+        collectionView.register(CalendarDayCell.self, forCellWithReuseIdentifier: CalendarDayCell.reuseID)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
 
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 44),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 78),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
@@ -141,6 +175,18 @@ class AllEntriesViewController: UIViewController {
         guard let date = cal.date(from: DateComponents(year: currentYear, month: currentMonth)),
               let range = cal.range(of: .day, in: .month, for: date) else { return 31 }
         return range.count
+    }
+
+    /// 해당 월 1일의 요일 (0=일, 1=월, ... 6=토)
+    private var firstWeekday: Int {
+        let cal = Calendar.current
+        guard let date = cal.date(from: DateComponents(year: currentYear, month: currentMonth, day: 1)) else { return 0 }
+        let weekday = cal.component(.weekday, from: date) // 1=일, 2=월, ...
+        return weekday - 1
+    }
+
+    private var totalCells: Int {
+        firstWeekday + daysInMonth
     }
 
     private var isCurrentMonth: Bool {
@@ -205,22 +251,47 @@ class AllEntriesViewController: UIViewController {
         updateNavigationButtons()
         collectionView.reloadData()
     }
+
+    // MARK: - Swipe Gestures
+
+    private func setupSwipeGestures() {
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(nextMonth))
+        swipeLeft.direction = .left
+        collectionView.addGestureRecognizer(swipeLeft)
+
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(prevMonth))
+        swipeRight.direction = .right
+        collectionView.addGestureRecognizer(swipeRight)
+    }
 }
 
 // MARK: - UICollectionViewDataSource
 
 extension AllEntriesViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        daysInMonth
+        totalCells
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DayCellView.reuseID, for: indexPath) as! DayCellView
-        let day = indexPath.item + 1
-        let entry = monthEntries[day]
-        let date = makeDate(day: day)
-        let isFuture = date > Date()
-        cell.configure(day: day, entry: entry, isFuture: isFuture)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CalendarDayCell.reuseID, for: indexPath) as! CalendarDayCell
+
+        let index = indexPath.item
+        if index < firstWeekday {
+            // 빈 셀
+            cell.configure(day: nil, entry: nil, isFuture: false, isToday: false, weekdayIndex: index)
+        } else {
+            let day = index - firstWeekday + 1
+            let entry = monthEntries[day]
+            let date = makeDate(day: day)
+            let isFuture = date > Date()
+
+            let cal = Calendar.current
+            let isToday = cal.isDateInToday(date)
+            let weekdayIndex = index % 7
+
+            cell.configure(day: day, entry: entry, isFuture: isFuture, isToday: isToday, weekdayIndex: weekdayIndex)
+        }
+
         return cell
     }
 }
@@ -229,16 +300,15 @@ extension AllEntriesViewController: UICollectionViewDataSource {
 
 extension AllEntriesViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let spacing: CGFloat = 8
-        let inset: CGFloat = 12
-        let totalSpacing = spacing * 2 + inset * 2
-        let width = (collectionView.bounds.width - totalSpacing) / 3
-        let cellHeight = width + 24 // square photo area + day label
-        return CGSize(width: width, height: cellHeight)
+        let width = collectionView.bounds.width / 7
+        return CGSize(width: width, height: width + 8)
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let day = indexPath.item + 1
+        let index = indexPath.item
+        guard index >= firstWeekday else { return }
+
+        let day = index - firstWeekday + 1
         let date = makeDate(day: day)
         guard date <= Date() else { return }
 
@@ -246,7 +316,6 @@ extension AllEntriesViewController: UICollectionViewDelegateFlowLayout {
         let hasContent = entry != nil && (!entry!.text.isEmpty || entry!.photoData != nil)
 
         if hasContent {
-            // 컨텐츠 있으면 피드 뷰
             let monthEntriesList = (1...daysInMonth).compactMap { monthEntries[$0] }
                 .filter { !$0.text.isEmpty || $0.photoData != nil }
             let feedVC = MonthFeedViewController(entries: monthEntriesList, selectedDate: date)
@@ -257,7 +326,6 @@ extension AllEntriesViewController: UICollectionViewDelegateFlowLayout {
             }
             present(feedVC, animated: true)
         } else {
-            // 빈 섬네일이면 기록화면
             guard let baby = CoreDataStack.shared.fetchBaby() else { return }
             let editorVC = DiaryEditorViewController(date: date, baby: baby)
             editorVC.modalPresentationStyle = .fullScreen
@@ -269,15 +337,15 @@ extension AllEntriesViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-// MARK: - Day Cell
+// MARK: - Calendar Day Cell
 
-private class DayCellView: UICollectionViewCell {
-    static let reuseID = "DayCellView"
+private class CalendarDayCell: UICollectionViewCell {
+    static let reuseID = "CalendarDayCell"
 
-    private let thumbnailContainer = UIView()
-    private let thumbnailImageView = UIImageView()
-    private let textPreview = UILabel()
     private let dayLabel = UILabel()
+    private let dotView = UIView()
+    private let thumbnailImageView = UIImageView()
+    private let todayCircle = UIView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -289,80 +357,148 @@ private class DayCellView: UICollectionViewCell {
     private func setupViews() {
         contentView.backgroundColor = .clear
 
-        // Thumbnail container (square)
-        thumbnailContainer.layer.cornerRadius = 8
-        thumbnailContainer.clipsToBounds = true
-        thumbnailContainer.backgroundColor = DS.bgSubtle
-        thumbnailContainer.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(thumbnailContainer)
+        // 오늘 동그라미 (손그림 느낌)
+        todayCircle.backgroundColor = .clear
+        todayCircle.isHidden = true
+        todayCircle.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(todayCircle)
+        drawHandDrawnCircle()
 
-        // Photo
-        thumbnailImageView.contentMode = .scaleAspectFill
-        thumbnailImageView.clipsToBounds = true
-        thumbnailImageView.translatesAutoresizingMaskIntoConstraints = false
-        thumbnailContainer.addSubview(thumbnailImageView)
-
-        // Text preview
-        textPreview.font = DS.font(8)
-        textPreview.textColor = DS.fgMuted
-        textPreview.numberOfLines = 4
-        textPreview.translatesAutoresizingMaskIntoConstraints = false
-        thumbnailContainer.addSubview(textPreview)
-
-        // Day label
-        dayLabel.font = DS.font(11)
+        // 날짜 숫자
+        dayLabel.font = DS.font(13)
         dayLabel.textAlignment = .center
         dayLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(dayLabel)
 
+        // 사진 섬네일 (작은 원)
+        thumbnailImageView.contentMode = .scaleAspectFill
+        thumbnailImageView.clipsToBounds = true
+        thumbnailImageView.layer.cornerRadius = 4
+        thumbnailImageView.isHidden = true
+        thumbnailImageView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(thumbnailImageView)
+
+        // 텍스트 기록 dot
+        dotView.backgroundColor = DS.accent
+        dotView.layer.cornerRadius = 3
+        dotView.isHidden = true
+        dotView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(dotView)
+
         NSLayoutConstraint.activate([
-            thumbnailContainer.topAnchor.constraint(equalTo: contentView.topAnchor),
-            thumbnailContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            thumbnailContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            thumbnailContainer.heightAnchor.constraint(equalTo: thumbnailContainer.widthAnchor),
+            todayCircle.centerXAnchor.constraint(equalTo: dayLabel.centerXAnchor),
+            todayCircle.centerYAnchor.constraint(equalTo: dayLabel.centerYAnchor),
+            todayCircle.widthAnchor.constraint(equalToConstant: 20),
+            todayCircle.heightAnchor.constraint(equalToConstant: 20),
 
-            thumbnailImageView.topAnchor.constraint(equalTo: thumbnailContainer.topAnchor),
-            thumbnailImageView.leadingAnchor.constraint(equalTo: thumbnailContainer.leadingAnchor),
-            thumbnailImageView.trailingAnchor.constraint(equalTo: thumbnailContainer.trailingAnchor),
-            thumbnailImageView.bottomAnchor.constraint(equalTo: thumbnailContainer.bottomAnchor),
+            dayLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            dayLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
 
-            textPreview.topAnchor.constraint(equalTo: thumbnailContainer.topAnchor, constant: 6),
-            textPreview.leadingAnchor.constraint(equalTo: thumbnailContainer.leadingAnchor, constant: 6),
-            textPreview.trailingAnchor.constraint(equalTo: thumbnailContainer.trailingAnchor, constant: -6),
-            textPreview.bottomAnchor.constraint(lessThanOrEqualTo: thumbnailContainer.bottomAnchor, constant: -6),
+            thumbnailImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            thumbnailImageView.topAnchor.constraint(equalTo: dayLabel.bottomAnchor, constant: 4),
+            thumbnailImageView.widthAnchor.constraint(equalToConstant: 32),
+            thumbnailImageView.heightAnchor.constraint(equalToConstant: 22),
 
-            dayLabel.topAnchor.constraint(equalTo: thumbnailContainer.bottomAnchor),
-            dayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            dayLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            dayLabel.heightAnchor.constraint(equalToConstant: 24),
+            dotView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            dotView.topAnchor.constraint(equalTo: dayLabel.bottomAnchor, constant: 6),
+            dotView.widthAnchor.constraint(equalToConstant: 6),
+            dotView.heightAnchor.constraint(equalToConstant: 6),
         ])
     }
 
-    func configure(day: Int, entry: CDDiaryEntry?, isFuture: Bool) {
-        dayLabel.text = "\(day)"
+    private static let handDrawnCirclePath: CGPath = {
+        let size: CGFloat = 20
+        let center = CGPoint(x: size / 2, y: size / 2)
+        let radius: CGFloat = size / 2 - 1.5
 
+        let path = UIBezierPath()
+        let offsets: [CGFloat] = [0.2, -0.15, 0.2, -0.2, 0.15, -0.2, 0.2, -0.15, 0.15, -0.2, 0.2, -0.15]
+        let segments = offsets.count
+        let angleStep = (2 * CGFloat.pi) / CGFloat(segments)
+
+        let startR = radius + offsets[0]
+        path.move(to: CGPoint(x: center.x + startR, y: center.y))
+
+        for i in 1...segments {
+            let angle = angleStep * CGFloat(i)
+            let wobble = offsets[i % segments]
+            let r = radius + wobble
+            let point = CGPoint(x: center.x + r * cos(angle), y: center.y + r * sin(angle))
+
+            let midAngle = angleStep * (CGFloat(i) - 0.5)
+            let ctrlR = radius + wobble * 0.3
+            let ctrl = CGPoint(x: center.x + ctrlR * cos(midAngle), y: center.y + ctrlR * sin(midAngle))
+
+            path.addQuadCurve(to: point, controlPoint: ctrl)
+        }
+        path.close()
+        return path.cgPath
+    }()
+
+    private func drawHandDrawnCircle() {
+        todayCircle.layer.sublayers?.removeAll()
+
+        let shapeLayer = CAShapeLayer()
+        shapeLayer.path = Self.handDrawnCirclePath
+        shapeLayer.strokeColor = DS.accent.cgColor
+        shapeLayer.fillColor = UIColor.clear.cgColor
+        shapeLayer.lineWidth = 1.3
+        shapeLayer.lineCap = .round
+        shapeLayer.lineJoin = .round
+
+        todayCircle.layer.addSublayer(shapeLayer)
+    }
+
+    func configure(day: Int?, entry: CDDiaryEntry?, isFuture: Bool, isToday: Bool, weekdayIndex: Int) {
         // Reset
+        dayLabel.text = nil
         thumbnailImageView.image = nil
         thumbnailImageView.isHidden = true
-        textPreview.text = nil
-        textPreview.isHidden = true
+        dotView.isHidden = true
+        todayCircle.isHidden = true
+        contentView.alpha = 1.0
 
-        thumbnailContainer.backgroundColor = DS.bgSubtle
+        guard let day = day else { return }
 
-        if let entry = entry, let data = entry.photoData, let image = UIImage(data: data) {
-            thumbnailImageView.image = image
-            thumbnailImageView.isHidden = false
-        } else if let entry = entry, !entry.text.isEmpty {
-            textPreview.text = entry.text
-            textPreview.isHidden = false
-        }
+        dayLabel.text = "\(day)"
 
+        // 요일 색상
         if isFuture {
             dayLabel.textColor = DS.fgPale
             contentView.alpha = 0.4
+        } else if weekdayIndex == 0 {
+            dayLabel.textColor = UIColor(hex: "D05050")
+        } else if weekdayIndex == 6 {
+            dayLabel.textColor = DS.accent
+        } else if entry != nil {
+            dayLabel.textColor = DS.fgStrong
         } else {
-            dayLabel.textColor = entry != nil ? DS.fgStrong : DS.fgMuted
-            contentView.alpha = 1.0
+            dayLabel.textColor = DS.fgMuted
         }
+
+        // 오늘 표시
+        if isToday {
+            todayCircle.isHidden = false
+        }
+
+        // 컨텐츠 표시
+        if let entry = entry, !isFuture {
+            if let data = entry.photoData, let image = UIImage(data: data) {
+                thumbnailImageView.image = image
+                thumbnailImageView.isHidden = false
+            } else if !entry.text.isEmpty {
+                dotView.isHidden = false
+            }
+        }
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        dayLabel.text = nil
+        thumbnailImageView.image = nil
+        thumbnailImageView.isHidden = true
+        dotView.isHidden = true
+        todayCircle.isHidden = true
+        contentView.alpha = 1.0
     }
 }

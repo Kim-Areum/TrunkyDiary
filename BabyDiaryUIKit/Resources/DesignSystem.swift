@@ -21,9 +21,56 @@ enum DS {
     static let yellow = UIColor(hex: "FCF1D3")
     static let yellowBorder = UIColor(hex: "D4BD7F")
     static let blue = UIColor(hex: "B1C3D7")
-    static let pink = UIColor(hex: "DBB9B2")
+    static let pink = UIColor(hex: "F5D0D8")
     static let green = UIColor(hex: "C3E3CD")
     static let purple = UIColor(hex: "DECEF0")
+
+    // 테마 컬러
+    enum ThemeColor: String, CaseIterable {
+        case blue
+        case pink
+
+        var color: UIColor {
+            switch self {
+            case .blue: return UIColor(hex: "B1C3D7")
+            case .pink: return UIColor(hex: "F5D0D8")
+            }
+        }
+
+        var selectedTabColor: UIColor {
+            switch self {
+            case .blue: return UIColor(hex: "7A9ABF")
+            case .pink: return UIColor(hex: "D4919F")
+            }
+        }
+
+        func next() -> ThemeColor {
+            let all = ThemeColor.allCases
+            let idx = all.firstIndex(of: self) ?? 0
+            return all[(idx + 1) % all.count]
+        }
+    }
+
+    static var currentTheme: ThemeColor {
+        get {
+            let raw = UserDefaults.standard.string(forKey: "appThemeColor") ?? "blue"
+            return ThemeColor(rawValue: raw) ?? .blue
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "appThemeColor")
+            NotificationCenter.default.post(name: .themeColorChanged, object: nil)
+        }
+    }
+
+    /// 앱 전체 포인트 컬러 (테마에 따라 변경)
+    static var accent: UIColor {
+        currentTheme.color
+    }
+
+    /// 탭바 선택 컬러
+    static var accentSelected: UIColor {
+        currentTheme.selectedTabColor
+    }
 
     // Font
     static let fontName = "Ownglyph_PDH-Rg"
@@ -130,4 +177,8 @@ class NavBarView: UIView {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+}
+
+extension Notification.Name {
+    static let themeColorChanged = Notification.Name("themeColorChanged")
 }

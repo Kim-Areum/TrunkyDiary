@@ -93,7 +93,7 @@ class PlaybackPopupView: UIView {
 
             // Play/Pause icon
             let playIcon = UIImageView(image: UIImage(systemName: "play.circle.fill"))
-            playIcon.tintColor = DS.blue
+            playIcon.tintColor = DS.accent
             playIcon.contentMode = .scaleAspectFit
             playIcon.translatesAutoresizingMaskIntoConstraints = false
             playIcon.isUserInteractionEnabled = true
@@ -298,7 +298,7 @@ class PlaybackPopupView: UIView {
                 item.icon.tintColor = UIColor(hex: "D05050")
             } else {
                 item.icon.image = UIImage(systemName: "play.circle.fill")
-                item.icon.tintColor = DS.blue
+                item.icon.tintColor = DS.accent
             }
         }
 

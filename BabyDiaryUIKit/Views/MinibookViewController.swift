@@ -423,7 +423,7 @@ class MinibookViewController: UIViewController {
         // B7 size label
         let sizeLabel = UILabel()
         sizeLabel.text = "B7  94 x 128 mm"
-        sizeLabel.font = DS.font(10)
+        sizeLabel.font = DS.font(12)
         sizeLabel.textColor = DS.fgPale
         sizeLabel.textAlignment = .center
         sizeLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -765,6 +765,8 @@ class MinibookViewController: UIViewController {
     @objc private func changeCoverTapped() {
         let picker = CustomPhotoPickerViewController()
         picker.delegate = self
+        picker.cropAspectRatio = 94.0 / 128.0
+        picker.modalPresentationStyle = .fullScreen
         present(picker, animated: true)
     }
 
@@ -1044,21 +1046,12 @@ class MinibookViewController: UIViewController {
 
 extension MinibookViewController: CustomPhotoPickerDelegate {
     func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
-        picker.dismiss(animated: true) { [weak self] in
-            guard let self = self else { return }
-            // 커버 비율 94:128로 크롭 에디터
-            let cropVC = CoverCropViewController(image: image, aspectRatio: 94.0 / 128.0)
-            cropVC.onSave = { [weak self] croppedImage in
-                guard let self = self else { return }
-                let data = croppedImage.jpegData(compressionQuality: 0.8)
-                self.coverPhotoData = data
-                if let data = data {
-                    UserDefaults.standard.set(data, forKey: self.coverKey)
-                }
-                self.renderCurrentPage()
-            }
-            self.present(cropVC, animated: true)
+        let data = image.jpegData(compressionQuality: 0.8)
+        coverPhotoData = data
+        if let data = data {
+            UserDefaults.standard.set(data, forKey: coverKey)
         }
+        renderCurrentPage()
     }
 }
 

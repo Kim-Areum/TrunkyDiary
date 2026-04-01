@@ -9,6 +9,7 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
 
     weak var delegate: CustomPhotoPickerDelegate?
     private var targetDate: Date?
+    var cropAspectRatio: CGFloat = 1.0 / 0.65 // 기본값: 카드 사진 비율
 
     private var categories: [PhotoCategory] = []
     private var selectedCategory: PhotoCategory?
@@ -47,7 +48,7 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
         navBar.leftButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
 
         let doneButton = UIButton(type: .system)
-        doneButton.setTitle("완료", for: .normal)
+        doneButton.setTitle("다음", for: .normal)
         doneButton.titleLabel?.font = DS.font(15)
         doneButton.setTitleColor(DS.fgPale, for: .normal)
         doneButton.backgroundColor = DS.bgNeutral
@@ -271,7 +272,7 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
         if let navBar = view.viewWithTag(100), let doneBtn = navBar.viewWithTag(999) as? UIButton {
             let hasSelection = selectedAsset != nil
             doneBtn.setTitleColor(hasSelection ? DS.fgStrong : DS.fgPale, for: .normal)
-            doneBtn.backgroundColor = hasSelection ? DS.blue : DS.bgNeutral
+            doneBtn.backgroundColor = hasSelection ? DS.accent : DS.bgNeutral
         }
     }
 
@@ -292,7 +293,14 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
         PHImageManager.default().requestImage(for: asset, targetSize: CGSize(width: 1920, height: 1920), contentMode: .aspectFill, options: opts) { [weak self] img, _ in
             guard let self = self, let img = img else { return }
             DispatchQueue.main.async {
-                self.delegate?.photoPicker(self, didSelect: img)
+                let cropVC = CoverCropViewController(image: img, aspectRatio: self.cropAspectRatio)
+                cropVC.modalPresentationStyle = .fullScreen
+                cropVC.transitioningDelegate = PushTransitionManager.shared
+                cropVC.onSave = { [weak self] croppedImage in
+                    guard let self = self else { return }
+                    self.delegate?.photoPicker(self, didSelect: croppedImage)
+                }
+                self.present(cropVC, animated: true)
             }
         }
     }
@@ -347,7 +355,7 @@ class PhotoCell: UICollectionViewCell {
         overlay.isHidden = true
         contentView.addSubview(overlay)
 
-        checkmark.tintColor = DS.blue
+        checkmark.tintColor = DS.accent
         checkmark.isHidden = true
         checkmark.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(checkmark)

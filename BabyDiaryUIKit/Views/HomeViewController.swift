@@ -20,6 +20,13 @@ class HomeViewController: UIViewController {
         setupSegmentedControl()
         setupContainer()
         showTab(0)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(themeChanged), name: .themeColorChanged, object: nil)
+    }
+
+    @objc private func themeChanged() {
+        // 인디케이터 색상 업데이트
+        showTab(selectedTab)
     }
 
     private let segmentBar = UIView()
@@ -44,7 +51,7 @@ class HomeViewController: UIViewController {
         todayButton.setTitleColor(DS.fgStrong, for: .normal)
         todayButton.addTarget(self, action: #selector(todayTapped), for: .touchUpInside)
 
-        todayIndicator.backgroundColor = DS.blue
+        todayIndicator.backgroundColor = DS.accent
         todayIndicator.layer.cornerRadius = 2
         todayIndicator.translatesAutoresizingMaskIntoConstraints = false
 
@@ -104,8 +111,8 @@ class HomeViewController: UIViewController {
         // 인디케이터 업데이트
         todayButton.setTitleColor(index == 0 ? DS.fgStrong : DS.fgPale, for: .normal)
         allButton.setTitleColor(index == 1 ? DS.fgStrong : DS.fgPale, for: .normal)
-        todayIndicator.backgroundColor = index == 0 ? DS.blue : .clear
-        allIndicator.backgroundColor = index == 1 ? DS.blue : .clear
+        todayIndicator.backgroundColor = index == 0 ? DS.accent : .clear
+        allIndicator.backgroundColor = index == 1 ? DS.accent : .clear
 
         // 자식 VC 교체
         children.forEach {

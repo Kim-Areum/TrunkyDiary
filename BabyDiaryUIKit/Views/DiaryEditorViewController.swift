@@ -118,7 +118,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         saveLabel.textColor = DS.fgStrong
 
         let saveBg = UIView()
-        saveBg.backgroundColor = DS.blue
+        saveBg.backgroundColor = DS.accent
         saveBg.layer.cornerRadius = 15
         saveBg.isUserInteractionEnabled = false
 
@@ -385,11 +385,11 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         cardBodyView.addSubview(textContainer)
 
         placeholderLabel.text = "오늘 우리 아기와의 하루는 어땠나요?"
-        placeholderLabel.font = DS.font(14)
+        placeholderLabel.font = DS.font(15)
         placeholderLabel.textColor = DS.fgPale
         placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        textView.font = DS.font(14)
+        textView.font = DS.font(15)
         textView.textColor = DS.fgStrong
         textView.backgroundColor = .clear
         textView.isScrollEnabled = true
@@ -605,7 +605,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
             )
             config.title = "녹음 중..."
         } else {
-            config.baseBackgroundColor = DS.blue
+            config.baseBackgroundColor = DS.accent
             config.baseForegroundColor = DS.fgStrong
             config.image = UIImage(systemName: "mic.fill")?.withConfiguration(
                 UIImage.SymbolConfiguration(pointSize: 16)
@@ -731,24 +731,17 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
     @objc private func showPhotoPicker() {
         let picker = CustomPhotoPickerViewController(date: date)
         picker.delegate = self
+        picker.cropAspectRatio = 1.0 / 0.65
+        picker.modalPresentationStyle = .fullScreen
         present(picker, animated: true)
     }
 
     func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
-        // picker dismiss 완료 후 크롭 에디터 띄우기
-        picker.dismiss(animated: true) { [weak self] in
-            guard let self = self else { return }
-            let cropVC = CoverCropViewController(image: image, aspectRatio: 1.0 / 0.65)
-            cropVC.onSave = { [weak self] croppedImage in
-                guard let self = self else { return }
-                self.photoData = croppedImage.jpegData(compressionQuality: 0.8)
-                self.cropScale = 1.0
-                self.cropOffset = .zero
-                self.updatePhotoArea()
-                self.updateDeleteButtonVisibility()
-            }
-            self.present(cropVC, animated: true)
-        }
+        photoData = image.jpegData(compressionQuality: 0.8)
+        cropScale = 1.0
+        cropOffset = .zero
+        updatePhotoArea()
+        updateDeleteButtonVisibility()
     }
 
     @objc private func deletePhotoTapped() {
@@ -777,17 +770,18 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         mainScrollView.contentInset.bottom = keyboardHeight
         mainScrollView.verticalScrollIndicatorInsets.bottom = keyboardHeight
 
-        // 카드 위로
+        // 카드 위로 + 음성 버튼이 키보드 바로 위에 보이도록 스크롤
         contentTopConstraint?.constant = 20
-        UIView.animate(withDuration: duration) {
-            self.view.layoutIfNeeded()
-        }
+        self.view.layoutIfNeeded()
 
-        // 텍스트뷰가 보이도록 스크롤
-        DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
             guard let self = self else { return }
-            let textViewFrame = self.textView.convert(self.textView.bounds, to: self.mainScrollView)
-            self.mainScrollView.scrollRectToVisible(textViewFrame.insetBy(dx: 0, dy: -20), animated: true)
+            let recordFrameInScroll = self.recordButton.convert(self.recordButton.bounds, to: self.mainScrollView)
+            let visibleHeight = self.mainScrollView.bounds.height - keyboardHeight
+            let targetOffset = max(0, recordFrameInScroll.maxY - visibleHeight + 10)
+            UIView.animate(withDuration: duration) {
+                self.mainScrollView.contentOffset.y = targetOffset
+            }
         }
     }
 
@@ -1236,7 +1230,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         let playIcon = UIImageView()
         let isCurrentPlaying = playingIndex == index
         playIcon.image = UIImage(systemName: isCurrentPlaying ? "pause.circle.fill" : "play.circle.fill")
-        playIcon.tintColor = isCurrentPlaying ? UIColor(hex: "D05050") : DS.blue
+        playIcon.tintColor = isCurrentPlaying ? UIColor(hex: "D05050") : DS.accent
         playIcon.contentMode = .scaleAspectFit
         playIcon.translatesAutoresizingMaskIntoConstraints = false
 

@@ -20,7 +20,9 @@ class TodayViewController: UIViewController {
     private let elephantSize: CGFloat = 38
     private let cycleDuration: TimeInterval = 20
     private var elephantStartTime: CFTimeInterval = 0
-    private let elephantFrameNames = ["Elephant2", "Elephant3"]
+    private var elephantFrameNames: [String] {
+        DS.currentTheme == .pink ? ["PinkElephant2", "PinkElephant3"] : ["Elephant2", "Elephant3"]
+    }
     private let elephantFrameInterval: TimeInterval = 0.3
 
     // MARK: - UI Elements
@@ -65,6 +67,13 @@ class TodayViewController: UIViewController {
         setupGrassOverlay()
         setupVoiceButton()
         reloadData()
+
+        NotificationCenter.default.addObserver(self, selector: #selector(themeChanged), name: .themeColorChanged, object: nil)
+    }
+
+    @objc private func themeChanged() {
+        updateVoiceButtonAppearance()
+        elephantView.image = UIImage(named: elephantFrameNames[0])
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -199,7 +208,7 @@ class TodayViewController: UIViewController {
         }
 
         elephantView.contentMode = .scaleAspectFit
-        elephantView.image = UIImage(named: "Elephant2")
+        elephantView.image = UIImage(named: elephantFrameNames[0])
         elephantView.translatesAutoresizingMaskIntoConstraints = false
         elephantContainer.addSubview(elephantView)
 
@@ -426,7 +435,7 @@ class TodayViewController: UIViewController {
         ])
 
         // Diary text
-        diaryTextLabel.font = DS.font(14)
+        diaryTextLabel.font = DS.font(15)
         diaryTextLabel.textColor = DS.fgStrong
         diaryTextLabel.numberOfLines = 0
         diaryTextLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -491,7 +500,7 @@ class TodayViewController: UIViewController {
     private func updateVoiceButtonAppearance() {
         let iconName = isRecording ? "stop.circle.fill" : "mic.fill"
         let title = isRecording ? "녹음 중..." : "음성으로 기록"
-        let bgColor = isRecording ? UIColor(hex: "E8A0A0") : DS.blue
+        let bgColor = isRecording ? UIColor(hex: "E8A0A0") : DS.accent
         let iconColor = isRecording ? UIColor.white : DS.fgStrong
 
         let config = UIImage.SymbolConfiguration(pointSize: 16)

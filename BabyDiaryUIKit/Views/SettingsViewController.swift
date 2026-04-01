@@ -28,6 +28,7 @@ class SettingsViewController: UIViewController {
 
     // Elephant toggle
     private let elephantToggle = UISwitch()
+    private let elephantImageView = UIImageView()
 
     private var birthDate = Date()
 
@@ -260,23 +261,32 @@ class SettingsViewController: UIViewController {
         let toggleContainer = UIView()
         toggleContainer.translatesAutoresizingMaskIntoConstraints = false
 
-        let elephantImage = UIImageView(image: UIImage(named: "Elephant2"))
-        elephantImage.contentMode = .scaleAspectFit
-        elephantImage.transform = CGAffineTransform(scaleX: -1, y: 1)
-        elephantImage.translatesAutoresizingMaskIntoConstraints = false
-        toggleContainer.addSubview(elephantImage)
+        let elephantName = DS.currentTheme == .pink ? "PinkElephant2" : "Elephant2"
+        elephantImageView.image = UIImage(named: elephantName)
+        elephantImageView.contentMode = .scaleAspectFit
+        elephantImageView.transform = CGAffineTransform(scaleX: -1, y: 1)
+        elephantImageView.isUserInteractionEnabled = true
+        elephantImageView.translatesAutoresizingMaskIntoConstraints = false
+        toggleContainer.addSubview(elephantImageView)
+
+        // 코끼리 탭 → 테마 컬러 변경
+        let colorTap = UITapGestureRecognizer(target: self, action: #selector(elephantColorTapped))
+        elephantImageView.addGestureRecognizer(colorTap)
+
+        // 흔들림 애니메이션 (탭 가능 힌트)
+        startWiggleAnimation()
 
         elephantToggle.isOn = !UserDefaults.standard.bool(forKey: "hideElephant")
-        elephantToggle.onTintColor = DS.blue
+        elephantToggle.onTintColor = DS.accent
         elephantToggle.addTarget(self, action: #selector(elephantToggleChanged), for: .valueChanged)
         elephantToggle.translatesAutoresizingMaskIntoConstraints = false
         toggleContainer.addSubview(elephantToggle)
 
         NSLayoutConstraint.activate([
-            elephantImage.leadingAnchor.constraint(equalTo: toggleContainer.leadingAnchor),
-            elephantImage.centerYAnchor.constraint(equalTo: toggleContainer.centerYAnchor),
-            elephantImage.heightAnchor.constraint(equalToConstant: 30),
-            elephantImage.widthAnchor.constraint(equalToConstant: 60),
+            elephantImageView.leadingAnchor.constraint(equalTo: toggleContainer.leadingAnchor),
+            elephantImageView.centerYAnchor.constraint(equalTo: toggleContainer.centerYAnchor),
+            elephantImageView.heightAnchor.constraint(equalToConstant: 30),
+            elephantImageView.widthAnchor.constraint(equalToConstant: 60),
 
             elephantToggle.trailingAnchor.constraint(equalTo: toggleContainer.trailingAnchor),
             elephantToggle.centerYAnchor.constraint(equalTo: toggleContainer.centerYAnchor),
@@ -319,7 +329,7 @@ class SettingsViewController: UIViewController {
 
         let dBadge = makeAgeBadge(text: "D+\(baby.dayCount)", color: DS.yellow)
         let mBadge = makeAgeBadge(text: baby.monthAndDays, color: DS.green)
-        let yBadge = makeAgeBadge(text: "만 \(baby.ageYears)세", color: DS.blue)
+        let yBadge = makeAgeBadge(text: "만 \(baby.ageYears)세", color: DS.accent)
         badgesStack.addArrangedSubview(dBadge)
         badgesStack.addArrangedSubview(mBadge)
         badgesStack.addArrangedSubview(yBadge)
@@ -377,6 +387,8 @@ class SettingsViewController: UIViewController {
     @objc private func pickPhoto() {
         let picker = CustomPhotoPickerViewController()
         picker.delegate = self
+        picker.cropAspectRatio = 1.0
+        picker.modalPresentationStyle = .fullScreen
         present(picker, animated: true)
     }
 
@@ -388,6 +400,38 @@ class SettingsViewController: UIViewController {
 
     @objc private func elephantToggleChanged() {
         UserDefaults.standard.set(!elephantToggle.isOn, forKey: "hideElephant")
+    }
+
+    @objc private func elephantColorTapped() {
+        let next = DS.currentTheme.next()
+        DS.currentTheme = next
+        elephantToggle.onTintColor = DS.accent
+
+        // 코끼리 이미지 교체
+        let newName = next == .pink ? "PinkElephant2" : "Elephant2"
+        elephantImageView.image = UIImage(named: newName)
+
+        // 앱 아이콘 변경
+        let iconName: String? = next == .pink ? "PinkAppIcon" : nil
+        UIApplication.shared.setAlternateIconName(iconName)
+    }
+
+    private func startWiggleAnimation() {
+        let animation = CAKeyframeAnimation(keyPath: "transform.rotation.z")
+        animation.values = [0, 0.06, -0.06, 0.04, -0.04, 0]
+        animation.keyTimes = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
+        animation.duration = 0.6
+        animation.repeatCount = .infinity
+        animation.beginTime = CACurrentMediaTime() + 1.0
+        animation.autoreverses = false
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+        // 3초마다 한 번씩 흔들림
+        let group = CAAnimationGroup()
+        group.animations = [animation]
+        group.duration = 4.0
+        group.repeatCount = .infinity
+        elephantImageView.layer.add(group, forKey: "wiggle")
     }
 }
 
@@ -408,17 +452,8 @@ extension SettingsViewController: DatePickerSheetDelegate {
 
 extension SettingsViewController: CustomPhotoPickerDelegate {
     func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
-        picker.dismiss(animated: true) { [weak self] in
-            guard let self = self else { return }
-            // 프로필 1:1 비율 크롭 에디터
-            let cropVC = CoverCropViewController(image: image, aspectRatio: 1.0)
-            cropVC.onSave = { [weak self] croppedImage in
-                guard let self = self else { return }
-                self.baby?.photoData = croppedImage.jpegData(compressionQuality: 0.8)
-                CoreDataStack.shared.save()
-                self.updateProfilePhoto()
-            }
-            self.present(cropVC, animated: true)
-        }
+        baby?.photoData = image.jpegData(compressionQuality: 0.8)
+        CoreDataStack.shared.save()
+        updateProfilePhoto()
     }
 }

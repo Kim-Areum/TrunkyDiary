@@ -6,7 +6,8 @@ class SplashViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = DS.bgBase
 
-        let imageView = UIImageView(image: UIImage(named: "AppIcon"))
+        let iconName = DS.currentTheme == .pink ? "PinkAppIcon" : "AppIcon"
+        let imageView = UIImageView(image: UIImage(named: iconName))
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)

@@ -17,6 +17,12 @@ class MainTabBarController: UITabBarController {
         viewControllers = [homeVC, minibookVC, settingsVC]
 
         configureTabBarAppearance()
+
+        NotificationCenter.default.addObserver(self, selector: #selector(themeChanged), name: .themeColorChanged, object: nil)
+    }
+
+    @objc private func themeChanged() {
+        configureTabBarAppearance()
     }
 
     private func configureTabBarAppearance() {
@@ -26,7 +32,7 @@ class MainTabBarController: UITabBarController {
 
         let font = DS.font(10)
         let normalAttrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: DS.fgPale]
-        let selectedColor = UIColor(hex: "7A9ABF")
+        let selectedColor = DS.accentSelected
         let selectedAttrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: selectedColor]
 
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttrs
