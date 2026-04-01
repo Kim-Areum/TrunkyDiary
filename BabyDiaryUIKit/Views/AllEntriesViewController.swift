@@ -346,7 +346,7 @@ private class DayCellView: UICollectionViewCell {
         textPreview.text = nil
         textPreview.isHidden = true
 
-        thumbnailContainer.backgroundColor = isFuture ? DS.bgSubtle.withAlphaComponent(0.5) : DS.bgSubtle
+        thumbnailContainer.backgroundColor = DS.bgSubtle
 
         if let entry = entry, let data = entry.photoData, let image = UIImage(data: data) {
             thumbnailImageView.image = image

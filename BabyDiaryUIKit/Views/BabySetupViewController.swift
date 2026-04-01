@@ -329,8 +329,10 @@ class BabySetupViewController: UIViewController {
 
 extension BabySetupViewController: CustomPhotoPickerDelegate {
     func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
-        photoData = image.jpegData(compressionQuality: 0.8)
-        updatePhotoUI()
+        picker.dismiss(animated: true) { [weak self] in
+            self?.photoData = image.jpegData(compressionQuality: 0.8)
+            self?.updatePhotoUI()
+        }
     }
 }
 

@@ -273,7 +273,6 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
             guard let self = self, let img = img else { return }
             DispatchQueue.main.async {
                 self.delegate?.photoPicker(self, didSelect: img)
-                self.dismiss(animated: true)
             }
         }
     }

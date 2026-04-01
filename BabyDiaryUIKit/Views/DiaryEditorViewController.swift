@@ -727,10 +727,20 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
     }
 
     func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
-        photoData = image.jpegData(compressionQuality: 0.8)
-        cropScale = 1.0
-        cropOffset = .zero
-        updatePhotoArea()
+        // picker dismiss 완료 후 크롭 에디터 띄우기
+        picker.dismiss(animated: true) { [weak self] in
+            guard let self = self else { return }
+            let cropVC = CoverCropViewController(image: image, aspectRatio: 1.0 / 0.65)
+            cropVC.onSave = { [weak self] croppedImage in
+                guard let self = self else { return }
+                self.photoData = croppedImage.jpegData(compressionQuality: 0.8)
+                self.cropScale = 1.0
+                self.cropOffset = .zero
+                self.updatePhotoArea()
+                self.updateDeleteButtonVisibility()
+            }
+            self.present(cropVC, animated: true)
+        }
     }
 
     @objc private func deletePhotoTapped() {
