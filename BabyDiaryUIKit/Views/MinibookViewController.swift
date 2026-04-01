@@ -1,5 +1,5 @@
 import UIKit
-import PhotosUI
+import UIKit
 
 class MinibookViewController: UIViewController {
 
@@ -315,12 +315,6 @@ class MinibookViewController: UIViewController {
         buttonsRow.translatesAutoresizingMaskIntoConstraints = false
         pageView.addSubview(buttonsRow)
 
-        if coverPhotoData != nil {
-            let cropBtn = makeCircleIconButton(systemName: "crop")
-            cropBtn.addTarget(self, action: #selector(cropCoverTapped), for: .touchUpInside)
-            buttonsRow.addArrangedSubview(cropBtn)
-        }
-
         let photoBtn = makeCircleIconButton(systemName: "photo.on.rectangle")
         photoBtn.addTarget(self, action: #selector(changeCoverTapped), for: .touchUpInside)
         buttonsRow.addArrangedSubview(photoBtn)
@@ -596,18 +590,9 @@ class MinibookViewController: UIViewController {
     }
 
     @objc private func changeCoverTapped() {
-        var config = PHPickerConfiguration()
-        config.selectionLimit = 1
-        config.filter = .images
-        let picker = PHPickerViewController(configuration: config)
+        let picker = CustomPhotoPickerViewController()
         picker.delegate = self
         present(picker, animated: true)
-    }
-
-    @objc private func cropCoverTapped() {
-        // Crop placeholder - could present a crop VC
-        // For now, just re-pick
-        changeCoverTapped()
     }
 
     @objc private func exportTapped() {
@@ -816,22 +801,24 @@ class MinibookViewController: UIViewController {
     }
 }
 
-// MARK: - PHPickerViewControllerDelegate
+// MARK: - CustomPhotoPickerDelegate
 
-extension MinibookViewController: PHPickerViewControllerDelegate {
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true)
-        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
-        provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
-            guard let image = object as? UIImage else { return }
-            let data = image.jpegData(compressionQuality: 0.8)
-            DispatchQueue.main.async {
-                self?.coverPhotoData = data
+extension MinibookViewController: CustomPhotoPickerDelegate {
+    func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
+        picker.dismiss(animated: true) { [weak self] in
+            guard let self = self else { return }
+            // 커버 비율 94:128로 크롭 에디터
+            let cropVC = CoverCropViewController(image: image, aspectRatio: 94.0 / 128.0)
+            cropVC.onSave = { [weak self] croppedImage in
+                guard let self = self else { return }
+                let data = croppedImage.jpegData(compressionQuality: 0.8)
+                self.coverPhotoData = data
                 if let data = data {
-                    UserDefaults.standard.set(data, forKey: self?.coverKey ?? "")
+                    UserDefaults.standard.set(data, forKey: self.coverKey)
                 }
-                self?.renderCurrentPage()
+                self.renderCurrentPage()
             }
+            self.present(cropVC, animated: true)
         }
     }
 }

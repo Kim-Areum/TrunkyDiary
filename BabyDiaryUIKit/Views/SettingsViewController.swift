@@ -1,5 +1,5 @@
 import UIKit
-import PhotosUI
+import UIKit
 
 class SettingsViewController: UIViewController {
 
@@ -375,10 +375,7 @@ class SettingsViewController: UIViewController {
     }
 
     @objc private func pickPhoto() {
-        var config = PHPickerConfiguration()
-        config.selectionLimit = 1
-        config.filter = .images
-        let picker = PHPickerViewController(configuration: config)
+        let picker = CustomPhotoPickerViewController()
         picker.delegate = self
         present(picker, animated: true)
     }
@@ -407,20 +404,21 @@ extension SettingsViewController: DatePickerSheetDelegate {
     }
 }
 
-// MARK: - PHPickerViewControllerDelegate
+// MARK: - CustomPhotoPickerDelegate
 
-extension SettingsViewController: PHPickerViewControllerDelegate {
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true)
-        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
-        provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
-            guard let image = object as? UIImage else { return }
-            let data = image.jpegData(compressionQuality: 0.8)
-            DispatchQueue.main.async {
-                self?.baby?.photoData = data
+extension SettingsViewController: CustomPhotoPickerDelegate {
+    func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
+        picker.dismiss(animated: true) { [weak self] in
+            guard let self = self else { return }
+            // 프로필 1:1 비율 크롭 에디터
+            let cropVC = CoverCropViewController(image: image, aspectRatio: 1.0)
+            cropVC.onSave = { [weak self] croppedImage in
+                guard let self = self else { return }
+                self.baby?.photoData = croppedImage.jpegData(compressionQuality: 0.8)
                 CoreDataStack.shared.save()
-                self?.updateProfilePhoto()
+                self.updateProfilePhoto()
             }
+            self.present(cropVC, animated: true)
         }
     }
 }

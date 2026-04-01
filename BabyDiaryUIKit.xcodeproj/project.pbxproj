@@ -20,6 +20,7 @@
 		92A66B05112D4C3D6B156CB5 /* PlaybackPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 032D6601516651401ED85F32 /* PlaybackPopupView.swift */; };
 		955F669AFF5409BCC3007229 /* BabySetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F947EAF338755876722249 /* BabySetupViewController.swift */; };
 		A6EB074E166E4CAEB375C2B5 /* DatePickerSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5448E132C103033648CFE68E /* DatePickerSheetViewController.swift */; };
+		B276E43329C90E529F687130 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = E18E3026D731000BF5FE5976 /* Localizable.strings */; };
 		B31C47D6FCF6288266458708 /* AllEntriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D2A368C91CB41B3059AA06B /* AllEntriesViewController.swift */; };
 		B732FD08B30A84C5AC38A215 /* FullScreenImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE004573B709C7178E93820 /* FullScreenImageViewController.swift */; };
 		C4C635F28E0CFD98F119ACFF /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E46BBDB251AB6BF6D1C205F /* DesignSystem.swift */; };
@@ -60,6 +61,7 @@
 		CD022B6051E860657D64A284 /* CustomAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomAlertView.swift; sourceTree = "<group>"; };
 		D01EC6EDF39CD40038B3F8EC /* BabyDiaryUIKit.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BabyDiaryUIKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D31E61BE233E80877FE3EE9D /* SpeechManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechManager.swift; sourceTree = "<group>"; };
+		E18E3026D731000BF5FE5976 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E8E28970F778C5743F8AD1FE /* CustomPhotoPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPhotoPickerViewController.swift; sourceTree = "<group>"; };
 		EE3F1D0266F42E5D87DF5865 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FBE63B19841AE0587BC8A046 /* CDDiaryEntry+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDDiaryEntry+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 			children = (
 				EE3F1D0266F42E5D87DF5865 /* AppDelegate.swift */,
 				135F09F676EDF2AF4A6C6613 /* Assets.xcassets */,
+				E18E3026D731000BF5FE5976 /* Localizable.strings */,
 				753F17541EFC24C972B9E18F /* SceneDelegate.swift */,
 				D08C87E19459B6DBB1F16681 /* BabyDiary.xcdatamodeld */,
 				CEA596B1960E0EA36A594B1E /* CoreData */,
@@ -197,6 +200,7 @@
 			knownRegions = (
 				Base,
 				en,
+				ko,
 			);
 			mainGroup = 8AF7D0CD55BB9BFE6AE2F198;
 			minimizedProjectReferenceProxies = 1;
@@ -216,6 +220,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				58AC37FF3617594BB589A9A2 /* Assets.xcassets in Resources */,
+				B276E43329C90E529F687130 /* Localizable.strings in Resources */,
 				C9B8BA61797305B52196E641 /* Ownglyph_PDH.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

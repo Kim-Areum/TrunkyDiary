@@ -144,10 +144,28 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
         }
     }
 
+    private func fetchAssetsForDate(_ date: Date) -> PHFetchResult<PHAsset> {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: date)
+        let end = cal.date(byAdding: .day, value: 1, to: start)!
+        let opts = PHFetchOptions()
+        opts.predicate = NSPredicate(format: "creationDate >= %@ AND creationDate < %@", start as NSDate, end as NSDate)
+        opts.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        return PHAsset.fetchAssets(with: .image, options: opts)
+    }
+
     private func loadCategories() {
         DispatchQueue.global().async { [weak self] in
             guard let self = self else { return }
             var cats: [PhotoCategory] = []
+
+            // 오늘 날짜 사진 탭
+            if let date = self.targetDate {
+                let assets = self.fetchAssetsForDate(date)
+                if assets.count > 0 {
+                    cats.append(.dateMemory(date))
+                }
+            }
 
             let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
             smartAlbums.enumerateObjects { collection, _, _ in
@@ -207,6 +225,8 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
         opts.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
 
         switch cat {
+        case .dateMemory(let date):
+            fetchResult = fetchAssetsForDate(date)
         case .album(let collection):
             fetchResult = PHAsset.fetchAssets(in: collection, options: opts)
         }
@@ -281,19 +301,29 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
 // MARK: - PhotoCategory
 
 enum PhotoCategory: Equatable {
+    case dateMemory(Date)
     case album(PHAssetCollection)
+
+    var id: String {
+        switch self {
+        case .dateMemory: return "dateMemory"
+        case .album(let c): return c.localIdentifier
+        }
+    }
 
     var title: String {
         switch self {
-        case .album(let c): return c.localizedTitle ?? "Album"
+        case .dateMemory(let date):
+            let f = DateFormatter()
+            f.locale = Locale.current
+            f.setLocalizedDateFormatFromTemplate("MMMMd")
+            return f.string(from: date)
+        case .album(let c): return c.localizedTitle ?? "앨범"
         }
     }
 
     static func == (lhs: PhotoCategory, rhs: PhotoCategory) -> Bool {
-        switch (lhs, rhs) {
-        case (.album(let a), .album(let b)):
-            return a.localIdentifier == b.localIdentifier
-        }
+        return lhs.id == rhs.id
     }
 }
 
