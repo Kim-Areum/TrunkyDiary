@@ -430,7 +430,13 @@ class SettingsViewController: UIViewController {
         // 앱 아이콘 변경
         let iconName: String? = next == .pink ? "PinkAppIcon" : nil
         if UIApplication.shared.supportsAlternateIcons {
-            UIApplication.shared.setAlternateIconName(iconName)
+            UIApplication.shared.setAlternateIconName(iconName) { error in
+                if let error = error {
+                    print("🔴 아이콘 변경 실패: \(error.localizedDescription)")
+                } else {
+                    print("🟢 아이콘 변경 성공: \(iconName ?? "기본")")
+                }
+            }
         }
 
     }

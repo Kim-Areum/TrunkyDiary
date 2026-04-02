@@ -302,7 +302,7 @@ class BabySetupViewController: UIViewController {
         let trimmedName = (nameField.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         let enabled = !trimmedName.isEmpty
         startButton.isEnabled = enabled
-        startButton.backgroundColor = enabled ? DS.pink : DS.bgNeutral
+        startButton.backgroundColor = enabled ? DS.accent : DS.bgNeutral
         startButton.setTitleColor(enabled ? DS.fgStrong : DS.fgPale, for: .normal)
     }
 

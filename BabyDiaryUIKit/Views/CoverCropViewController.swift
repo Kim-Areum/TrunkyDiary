@@ -200,14 +200,11 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         }
 
         onSave?(cropped)
-        // 사진첩 + 크롭 에디터 한꺼번에 dismiss
-        // 크롭 → 사진첩 → 원래 화면 순서이므로 가장 아래의 presenter에서 dismiss
+        // 가장 아래 presenter에서 한번에 dismiss
         if let root = presentingViewController?.presentingViewController {
             root.dismiss(animated: true)
-        } else if let picker = presentingViewController {
-            picker.dismiss(animated: true)
         } else {
-            dismiss(animated: true)
+            presentingViewController?.dismiss(animated: true) ?? dismiss(animated: true)
         }
     }
 }

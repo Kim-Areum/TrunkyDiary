@@ -295,7 +295,6 @@ class CustomPhotoPickerViewController: UIViewController, UICollectionViewDelegat
             DispatchQueue.main.async {
                 let cropVC = CoverCropViewController(image: img, aspectRatio: self.cropAspectRatio)
                 cropVC.modalPresentationStyle = .fullScreen
-                cropVC.transitioningDelegate = PushTransitionManager.shared
                 cropVC.onSave = { [weak self] croppedImage in
                     guard let self = self else { return }
                     self.delegate?.photoPicker(self, didSelect: croppedImage)
