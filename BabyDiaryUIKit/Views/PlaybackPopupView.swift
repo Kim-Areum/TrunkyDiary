@@ -122,32 +122,12 @@ class PlaybackPopupView: UIView {
             infoStack.axis = .vertical
             infoStack.spacing = 2
 
-            let nameRow = UIStackView()
-            nameRow.axis = .horizontal
-            nameRow.spacing = 4
-            nameRow.alignment = .center
-
             let nameLabel = UILabel()
             nameLabel.text = displayNames[index]
             nameLabel.font = DS.font(13)
             nameLabel.textColor = DS.fgStrong
             nameLabel.tag = 2000 + index
-            nameRow.addArrangedSubview(nameLabel)
-
-            let editIcon = UIButton(type: .system)
-            let pencilConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
-            editIcon.setImage(UIImage(systemName: "pencil", withConfiguration: pencilConfig), for: .normal)
-            editIcon.tintColor = DS.fgPale
-            editIcon.tag = 2000 + index
-            editIcon.addTarget(self, action: #selector(editNameTapped(_:)), for: .touchUpInside)
-            editIcon.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                editIcon.widthAnchor.constraint(equalToConstant: 24),
-                editIcon.heightAnchor.constraint(equalToConstant: 24),
-            ])
-            nameRow.addArrangedSubview(editIcon)
-
-            infoStack.addArrangedSubview(nameRow)
+            infoStack.addArrangedSubview(nameLabel)
 
             let timeLabel = UILabel()
             if index < timestamps.count {
@@ -268,15 +248,22 @@ class PlaybackPopupView: UIView {
     private func togglePlay(at index: Int) {
         if playingIndex == index {
             if isPaused {
-                // Resume
-                speechManager.resumePlayback()
+                // Resume from paused position
                 isPaused = false
-                startTimer()
                 updateIcons()
+                startTimer()
+                speechManager.playSingle(fileName: fileNames[index], from: pausedTime) { [weak self] in
+                    guard let self = self, self.playingIndex == index else { return }
+                    self.playingIndex = nil
+                    self.isPaused = false
+                    self.pausedTime = 0
+                    self.stopTimer()
+                    self.updateIcons()
+                }
             } else {
                 // Pause
                 pausedTime = speechManager.currentTime
-                speechManager.pausePlayback()
+                speechManager.stopPlayback()
                 isPaused = true
                 stopTimerOnly()
                 updateIcons()
@@ -291,10 +278,11 @@ class PlaybackPopupView: UIView {
             updateIcons()
             startTimer()
             speechManager.playSingle(fileName: fileNames[index]) { [weak self] in
-                self?.playingIndex = nil
-                self?.isPaused = false
-                self?.stopTimer()
-                self?.updateIcons()
+                guard let self = self, self.playingIndex == index else { return }
+                self.playingIndex = nil
+                self.isPaused = false
+                self.stopTimer()
+                self.updateIcons()
             }
         }
     }
@@ -329,30 +317,6 @@ class PlaybackPopupView: UIView {
         stopTimer()
         delegate?.playbackPopupDidDelete(at: index)
         dismiss()
-    }
-
-    @objc private func editNameTapped(_ sender: UIButton) {
-        let index = sender.tag - 2000
-        guard index < rowViews.count else { return }
-        let label = rowViews[index].nameLabel
-
-        let alertController = UIAlertController(title: "녹음 이름 변경", message: nil, preferredStyle: .alert)
-        alertController.addTextField { textField in
-            textField.text = label.text
-            textField.font = DS.font(14)
-        }
-        alertController.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alertController.addAction(UIAlertAction(title: "변경", style: .default) { [weak self] _ in
-            guard let newName = alertController.textFields?.first?.text, !newName.isEmpty else { return }
-            label.text = newName
-            self?.displayNames[index] = newName
-            self?.delegate?.playbackPopupDidRename(at: index, newName: newName)
-        })
-
-        // 현재 화면의 VC 찾기
-        if let vc = findViewController() {
-            vc.present(alertController, animated: true)
-        }
     }
 
     private func findViewController() -> UIViewController? {
