@@ -295,7 +295,23 @@ class SettingsViewController: UIViewController {
         ])
 
         contentStack.addArrangedSubview(toggleContainer)
-        contentStack.setCustomSpacing(8, after: toggleContainer)
+
+        // 가이드 문구 (최초 1회)
+        if !UserDefaults.standard.bool(forKey: "elephantColorGuideShown") {
+            let guideLabel = UILabel()
+            guideLabel.text = "탭해서 색 바꾸기"
+            guideLabel.font = DS.font(10)
+            guideLabel.textColor = DS.fgPale
+            guideLabel.textAlignment = .left
+            guideLabel.translatesAutoresizingMaskIntoConstraints = false
+            contentStack.addArrangedSubview(guideLabel)
+            contentStack.setCustomSpacing(2, after: toggleContainer)
+            contentStack.setCustomSpacing(8, after: guideLabel)
+
+            UserDefaults.standard.set(true, forKey: "elephantColorGuideShown")
+        } else {
+            contentStack.setCustomSpacing(8, after: toggleContainer)
+        }
     }
 
     // MARK: - Data Loading

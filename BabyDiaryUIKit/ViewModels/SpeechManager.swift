@@ -149,6 +149,47 @@ class SpeechManager {
         playQueue = []
     }
 
+    func pausePlayback() {
+        audioPlayer?.pause()
+    }
+
+    func resumePlayback() {
+        audioPlayer?.play()
+    }
+
+    var isCurrentlyPlaying: Bool {
+        audioPlayer?.isPlaying ?? false
+    }
+
+    var currentTime: TimeInterval {
+        audioPlayer?.currentTime ?? 0
+    }
+
+    var duration: TimeInterval {
+        audioPlayer?.duration ?? 0
+    }
+
+    /// 단일 파일 재생 (특정 시간부터)
+    func playSingle(fileName: String, from time: TimeInterval = 0, completion: @escaping () -> Void) {
+        let url = Self.recordingsDirectory().appendingPathComponent(fileName)
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
+
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, mode: .default, options: [])
+        try? session.setActive(true, options: .notifyOthersOnDeactivation)
+
+        playQueue = []
+        playCompletion = completion
+        audioPlayer = try? AVAudioPlayer(contentsOf: url)
+        audioPlayer?.volume = 1.0
+        audioPlayer?.currentTime = time
+        audioPlayer?.delegate = AudioPlayerDelegate.shared
+        AudioPlayerDelegate.shared.onFinish = {
+            DispatchQueue.main.async { completion() }
+        }
+        audioPlayer?.play()
+    }
+
     // MARK: - On-Device AI Correction
 
     private func correctWithOnDeviceAI(_ text: String) async -> String {

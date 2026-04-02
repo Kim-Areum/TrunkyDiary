@@ -1,29 +1,44 @@
 import UIKit
+import AVFoundation
 
 protocol PlaybackPopupDelegate: AnyObject {
     func playbackPopupDidDelete(at index: Int)
+    func playbackPopupDidRename(at index: Int, newName: String)
     func playbackPopupDidDismiss()
+}
+
+extension PlaybackPopupDelegate {
+    func playbackPopupDidRename(at index: Int, newName: String) {}
 }
 
 class PlaybackPopupView: UIView {
 
     weak var delegate: PlaybackPopupDelegate?
     private var fileNames: [String]
+    private var displayNames: [String]
     private var timestamps: [Date]
     private let speechManager = SpeechManager()
     private var playingIndex: Int? = nil
+    private var isPaused = false
     private var isPlayingAll = false
-    private var rowViews: [(icon: UIImageView, row: UIStackView)] = []
+    private var pausedTime: TimeInterval = 0
+    private var rowViews: [(icon: UIImageView, nameLabel: UILabel, timeLabel: UILabel)] = []
     private var playAllButton: UIButton?
+    private var playTimer: Timer?
 
-    init(fileNames: [String], timestamps: [Date]) {
+    init(fileNames: [String], timestamps: [Date], displayNames: [String]? = nil) {
         self.fileNames = fileNames
         self.timestamps = timestamps
+        self.displayNames = displayNames ?? fileNames.enumerated().map { "녹음 \($0.offset + 1)" }
         super.init(frame: .zero)
         setupUI()
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    deinit {
+        playTimer?.invalidate()
+    }
 
     private func setupUI() {
         backgroundColor = UIColor.black.withAlphaComponent(0.01)
@@ -96,7 +111,6 @@ class PlaybackPopupView: UIView {
             playIcon.tintColor = DS.accent
             playIcon.contentMode = .scaleAspectFit
             playIcon.translatesAutoresizingMaskIntoConstraints = false
-            playIcon.isUserInteractionEnabled = true
             NSLayoutConstraint.activate([
                 playIcon.widthAnchor.constraint(equalToConstant: 22),
                 playIcon.heightAnchor.constraint(equalToConstant: 22),
@@ -108,22 +122,44 @@ class PlaybackPopupView: UIView {
             infoStack.axis = .vertical
             infoStack.spacing = 2
 
+            let nameRow = UIStackView()
+            nameRow.axis = .horizontal
+            nameRow.spacing = 4
+            nameRow.alignment = .center
+
             let nameLabel = UILabel()
-            nameLabel.text = "녹음 \(index + 1)"
+            nameLabel.text = displayNames[index]
             nameLabel.font = DS.font(13)
             nameLabel.textColor = DS.fgStrong
-            infoStack.addArrangedSubview(nameLabel)
+            nameLabel.tag = 2000 + index
+            nameRow.addArrangedSubview(nameLabel)
 
+            let editIcon = UIButton(type: .system)
+            let pencilConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+            editIcon.setImage(UIImage(systemName: "pencil", withConfiguration: pencilConfig), for: .normal)
+            editIcon.tintColor = DS.fgPale
+            editIcon.tag = 2000 + index
+            editIcon.addTarget(self, action: #selector(editNameTapped(_:)), for: .touchUpInside)
+            editIcon.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                editIcon.widthAnchor.constraint(equalToConstant: 24),
+                editIcon.heightAnchor.constraint(equalToConstant: 24),
+            ])
+            nameRow.addArrangedSubview(editIcon)
+
+            infoStack.addArrangedSubview(nameRow)
+
+            let timeLabel = UILabel()
             if index < timestamps.count {
-                let timeLabel = UILabel()
                 let tf = DateFormatter()
                 tf.locale = Locale.current
                 tf.dateFormat = "a h:mm"
                 timeLabel.text = tf.string(from: timestamps[index])
-                timeLabel.font = DS.font(11)
-                timeLabel.textColor = DS.fgPale
-                infoStack.addArrangedSubview(timeLabel)
             }
+            timeLabel.font = DS.font(11)
+            timeLabel.textColor = DS.fgPale
+            infoStack.addArrangedSubview(timeLabel)
+
             row.addArrangedSubview(infoStack)
 
             let rowSpacer = UIView()
@@ -162,7 +198,7 @@ class PlaybackPopupView: UIView {
             ])
 
             listStack.addArrangedSubview(rowContainer)
-            rowViews.append((icon: playIcon, row: row))
+            rowViews.append((icon: playIcon, nameLabel: nameLabel, timeLabel: timeLabel))
 
             if index < fileNames.count - 1 {
                 let divider = UIView()
@@ -231,19 +267,33 @@ class PlaybackPopupView: UIView {
 
     private func togglePlay(at index: Int) {
         if playingIndex == index {
-            // Stop
-            speechManager.stopPlayback()
-            playingIndex = nil
-            isPlayingAll = false
-            updateIcons()
+            if isPaused {
+                // Resume
+                speechManager.resumePlayback()
+                isPaused = false
+                startTimer()
+                updateIcons()
+            } else {
+                // Pause
+                pausedTime = speechManager.currentTime
+                speechManager.pausePlayback()
+                isPaused = true
+                stopTimerOnly()
+                updateIcons()
+            }
         } else {
-            // Play
+            // 다른 파일 재생
             speechManager.stopPlayback()
             playingIndex = index
+            isPaused = false
             isPlayingAll = false
+            pausedTime = 0
             updateIcons()
-            speechManager.playAll(fileNames: [fileNames[index]]) { [weak self] in
+            startTimer()
+            speechManager.playSingle(fileName: fileNames[index]) { [weak self] in
                 self?.playingIndex = nil
+                self?.isPaused = false
+                self?.stopTimer()
                 self?.updateIcons()
             }
         }
@@ -254,15 +304,18 @@ class PlaybackPopupView: UIView {
             speechManager.stopPlayback()
             playingIndex = nil
             isPlayingAll = false
+            stopTimer()
             updateIcons()
         } else {
             speechManager.stopPlayback()
             isPlayingAll = true
             playingIndex = 0
             updateIcons()
+            startTimer()
             speechManager.playAll(fileNames: fileNames) { [weak self] in
                 self?.playingIndex = nil
                 self?.isPlayingAll = false
+                self?.stopTimer()
                 self?.updateIcons()
             }
         }
@@ -273,12 +326,47 @@ class PlaybackPopupView: UIView {
         speechManager.stopPlayback()
         playingIndex = nil
         isPlayingAll = false
+        stopTimer()
         delegate?.playbackPopupDidDelete(at: index)
         dismiss()
     }
 
+    @objc private func editNameTapped(_ sender: UIButton) {
+        let index = sender.tag - 2000
+        guard index < rowViews.count else { return }
+        let label = rowViews[index].nameLabel
+
+        let alertController = UIAlertController(title: "녹음 이름 변경", message: nil, preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.text = label.text
+            textField.font = DS.font(14)
+        }
+        alertController.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alertController.addAction(UIAlertAction(title: "변경", style: .default) { [weak self] _ in
+            guard let newName = alertController.textFields?.first?.text, !newName.isEmpty else { return }
+            label.text = newName
+            self?.displayNames[index] = newName
+            self?.delegate?.playbackPopupDidRename(at: index, newName: newName)
+        })
+
+        // 현재 화면의 VC 찾기
+        if let vc = findViewController() {
+            vc.present(alertController, animated: true)
+        }
+    }
+
+    private func findViewController() -> UIViewController? {
+        var responder: UIResponder? = self
+        while let r = responder {
+            if let vc = r as? UIViewController { return vc }
+            responder = r.next
+        }
+        return nil
+    }
+
     @objc private func dismissTapped() {
         speechManager.stopPlayback()
+        stopTimer()
         dismiss()
     }
 
@@ -290,6 +378,47 @@ class PlaybackPopupView: UIView {
             self.delegate?.playbackPopupDidDismiss()
         }
     }
+
+    // MARK: - Timer (남은 시간 카운트다운)
+
+    private func startTimer() {
+        playTimer?.invalidate()
+        playTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+            self?.updatePlaybackTime()
+        }
+    }
+
+    private func stopTimerOnly() {
+        playTimer?.invalidate()
+        playTimer = nil
+    }
+
+    private func stopTimer() {
+        stopTimerOnly()
+        // 시간 표시 복원
+        for (index, item) in rowViews.enumerated() {
+            if index < timestamps.count {
+                let tf = DateFormatter()
+                tf.locale = Locale.current
+                tf.dateFormat = "a h:mm"
+                item.timeLabel.text = tf.string(from: timestamps[index])
+                item.timeLabel.textColor = DS.fgPale
+            }
+        }
+    }
+
+    private func updatePlaybackTime() {
+        guard let index = playingIndex, index < rowViews.count else { return }
+        let remaining = speechManager.duration - speechManager.currentTime
+        let minutes = Int(max(0, remaining)) / 60
+        let seconds = Int(max(0, remaining)) % 60
+        let timeStr = String(format: "%d:%02d", minutes, seconds)
+
+        rowViews[index].timeLabel.text = timeStr
+        rowViews[index].timeLabel.textColor = UIColor(hex: "D05050")
+    }
+
+    // MARK: - UI Update
 
     private func updateIcons() {
         for (i, item) in rowViews.enumerated() {
