@@ -486,8 +486,6 @@ private class CalendarDayCell: UICollectionViewCell {
             if let data = entry.photoData, let image = UIImage(data: data) {
                 thumbnailImageView.image = image
                 thumbnailImageView.isHidden = false
-            } else if !entry.text.isEmpty {
-                dotView.isHidden = false
             }
         }
     }
