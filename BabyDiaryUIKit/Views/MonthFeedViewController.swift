@@ -319,8 +319,7 @@ private class FeedEntryCell: UITableViewCell {
 
         bodyTextLabel.font = DS.font(15)
         bodyTextLabel.textColor = DS.fgStrong
-        bodyTextLabel.numberOfLines = 6
-        bodyTextLabel.lineBreakMode = .byTruncatingTail
+        bodyTextLabel.numberOfLines = 0
         bodyTextLabel.translatesAutoresizingMaskIntoConstraints = false
         bodyView.addSubview(bodyTextLabel)
 
