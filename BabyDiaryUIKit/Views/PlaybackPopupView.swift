@@ -386,12 +386,12 @@ class PlaybackPopupView: UIView {
 
     private func updateIcons() {
         for (i, item) in rowViews.enumerated() {
-            if i == playingIndex {
+            if i == playingIndex && !isPaused {
                 item.icon.image = UIImage(systemName: "pause.circle.fill")
                 item.icon.tintColor = UIColor(hex: "D05050")
             } else {
                 item.icon.image = UIImage(systemName: "play.circle.fill")
-                item.icon.tintColor = DS.accent
+                item.icon.tintColor = i == playingIndex && isPaused ? UIColor(hex: "D05050") : DS.accent
             }
         }
 
