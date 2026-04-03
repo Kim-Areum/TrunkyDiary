@@ -116,7 +116,7 @@ class AllEntriesViewController: UIViewController {
             if index == 0 {
                 label.textColor = UIColor(hex: "D05050") // 일요일 빨간색
             } else if index == 6 {
-                label.textColor = DS.accent // 토요일 파란색
+                label.textColor = DS.accentCalendar // 토요일
             } else {
                 label.textColor = DS.fgMuted
             }
@@ -305,7 +305,16 @@ extension AllEntriesViewController: UICollectionViewDataSource {
             let isToday = cal.isDateInToday(date)
             let weekdayIndex = index % 7
 
-            cell.configure(day: day, entry: entry, isFuture: isFuture, isToday: isToday, weekdayIndex: weekdayIndex)
+            // 생일 체크
+            let baby = CoreDataStack.shared.fetchBaby()
+            var isBirthday = false
+            if let bd = baby?.birthDate {
+                let bdMonth = cal.component(.month, from: bd)
+                let bdDay = cal.component(.day, from: bd)
+                isBirthday = (currentMonth == bdMonth && day == bdDay)
+            }
+
+            cell.configure(day: day, entry: entry, isFuture: isFuture, isToday: isToday, weekdayIndex: weekdayIndex, isBirthday: isBirthday)
         }
 
         return cell
@@ -362,6 +371,8 @@ private class CalendarDayCell: UICollectionViewCell {
     private let dotView = UIView()
     private let thumbnailImageView = UIImageView()
     private let todayCircle = UIView()
+    private let birthdayCircle = UIView()
+    private let hbdLabel = UILabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -395,13 +406,36 @@ private class CalendarDayCell: UICollectionViewCell {
         contentView.addSubview(thumbnailImageView)
 
         // 텍스트 기록 dot
-        dotView.backgroundColor = DS.accent
+        dotView.backgroundColor = DS.accentCalendar
         dotView.layer.cornerRadius = 3
         dotView.isHidden = true
         dotView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(dotView)
 
+        // 생일 동그라미
+        birthdayCircle.backgroundColor = .clear
+        birthdayCircle.isHidden = true
+        birthdayCircle.translatesAutoresizingMaskIntoConstraints = false
+        contentView.insertSubview(birthdayCircle, belowSubview: dayLabel)
+        drawBirthdayCircle()
+
+        // HBD 라벨
+        hbdLabel.text = "HBD"
+        hbdLabel.font = DS.font(7)
+        hbdLabel.textColor = UIColor(hex: "D05050")
+        hbdLabel.isHidden = true
+        hbdLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(hbdLabel)
+
         NSLayoutConstraint.activate([
+            birthdayCircle.centerXAnchor.constraint(equalTo: dayLabel.centerXAnchor),
+            birthdayCircle.centerYAnchor.constraint(equalTo: dayLabel.centerYAnchor),
+            birthdayCircle.widthAnchor.constraint(equalToConstant: 20),
+            birthdayCircle.heightAnchor.constraint(equalToConstant: 20),
+
+            hbdLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 1),
+            hbdLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -2),
+
             todayCircle.centerXAnchor.constraint(equalTo: dayLabel.centerXAnchor),
             todayCircle.centerYAnchor.constraint(equalTo: dayLabel.centerYAnchor),
             todayCircle.widthAnchor.constraint(equalToConstant: 20),
@@ -456,7 +490,7 @@ private class CalendarDayCell: UICollectionViewCell {
 
         let shapeLayer = CAShapeLayer()
         shapeLayer.path = Self.handDrawnCirclePath
-        shapeLayer.strokeColor = DS.accent.cgColor
+        shapeLayer.strokeColor = DS.accentCalendar.cgColor
         shapeLayer.fillColor = UIColor.clear.cgColor
         shapeLayer.lineWidth = 1.3
         shapeLayer.lineCap = .round
@@ -465,13 +499,56 @@ private class CalendarDayCell: UICollectionViewCell {
         todayCircle.layer.addSublayer(shapeLayer)
     }
 
-    func configure(day: Int?, entry: CDDiaryEntry?, isFuture: Bool, isToday: Bool, weekdayIndex: Int) {
+    private static let birthdayCirclePath: CGPath = {
+        let size: CGFloat = 20
+        let center = CGPoint(x: size / 2, y: size / 2)
+        let radius: CGFloat = size / 2 - 1.5
+
+        let path = UIBezierPath()
+        let offsets: [CGFloat] = [0.15, -0.1, 0.12, -0.15, 0.1, -0.12, 0.15, -0.1, 0.12, -0.15, 0.1, -0.12]
+        let segments = offsets.count
+        let angleStep = (2 * CGFloat.pi) / CGFloat(segments)
+
+        let startR = radius + offsets[0]
+        path.move(to: CGPoint(x: center.x + startR, y: center.y))
+
+        for i in 1...segments {
+            let angle = angleStep * CGFloat(i)
+            let wobble = offsets[i % segments]
+            let r = radius + wobble
+            let point = CGPoint(x: center.x + r * cos(angle), y: center.y + r * sin(angle))
+
+            let midAngle = angleStep * (CGFloat(i) - 0.5)
+            let ctrlR = radius + wobble * 0.3
+            let ctrl = CGPoint(x: center.x + ctrlR * cos(midAngle), y: center.y + ctrlR * sin(midAngle))
+
+            path.addQuadCurve(to: point, controlPoint: ctrl)
+        }
+        path.close()
+        return path.cgPath
+    }()
+
+    private func drawBirthdayCircle() {
+        birthdayCircle.layer.sublayers?.removeAll()
+        let shapeLayer = CAShapeLayer()
+        shapeLayer.path = Self.birthdayCirclePath
+        shapeLayer.strokeColor = UIColor(hex: "D05050").cgColor
+        shapeLayer.fillColor = UIColor.clear.cgColor
+        shapeLayer.lineWidth = 1.3
+        shapeLayer.lineCap = .round
+        shapeLayer.lineJoin = .round
+        birthdayCircle.layer.addSublayer(shapeLayer)
+    }
+
+    func configure(day: Int?, entry: CDDiaryEntry?, isFuture: Bool, isToday: Bool, weekdayIndex: Int, isBirthday: Bool = false) {
         // Reset
         dayLabel.text = nil
         thumbnailImageView.image = nil
         thumbnailImageView.isHidden = true
         dotView.isHidden = true
         todayCircle.isHidden = true
+        birthdayCircle.isHidden = true
+        hbdLabel.isHidden = true
         contentView.alpha = 1.0
 
         guard let day = day else { return }
@@ -485,15 +562,18 @@ private class CalendarDayCell: UICollectionViewCell {
         } else if weekdayIndex == 0 {
             dayLabel.textColor = UIColor(hex: "D05050")
         } else if weekdayIndex == 6 {
-            dayLabel.textColor = DS.accent
+            dayLabel.textColor = DS.accentCalendar
         } else if entry != nil {
             dayLabel.textColor = DS.fgStrong
         } else {
             dayLabel.textColor = DS.fgMuted
         }
 
-        // 오늘 표시
-        if isToday {
+        // 생일 표시 (오늘보다 우선)
+        if isBirthday {
+            birthdayCircle.isHidden = false
+            hbdLabel.isHidden = false
+        } else if isToday {
             todayCircle.isHidden = false
         }
 
@@ -513,6 +593,8 @@ private class CalendarDayCell: UICollectionViewCell {
         thumbnailImageView.isHidden = true
         dotView.isHidden = true
         todayCircle.isHidden = true
+        birthdayCircle.isHidden = true
+        hbdLabel.isHidden = true
         contentView.alpha = 1.0
     }
 }

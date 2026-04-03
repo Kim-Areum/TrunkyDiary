@@ -75,6 +75,11 @@ enum DS {
         currentTheme.selectedTabColor
     }
 
+    /// 달력용 강조 컬러 (노란 테마일 때 더 진하게)
+    static var accentCalendar: UIColor {
+        currentTheme == .yellow ? UIColor(hex: "C4A545") : currentTheme.color
+    }
+
     // Font
     static let fontName = "Ownglyph_PDH-Rg"
 

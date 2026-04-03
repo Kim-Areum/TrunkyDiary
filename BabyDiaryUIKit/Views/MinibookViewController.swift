@@ -120,14 +120,27 @@ class MinibookViewController: UIViewController {
         let baby = CoreDataStack.shared.fetchBaby()
         periodStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
-        for period in Period.allCases {
-            // "전체"는 항상 표시, 나머지는 해당 기간에 데이터가 있을 때만
-            let hasData = period == .all || allEntries.contains { entry in
+        // 데이터가 있는 기간 수 세기
+        var availablePeriods: [Period] = []
+        for period in Period.allCases where period != .all {
+            let hasData = allEntries.contains { entry in
                 let monthAge = baby.map { monthsBetween(from: $0.birthDate, to: entry.date) } ?? 0
                 return period.contains(monthAge: monthAge) && (!entry.text.isEmpty || entry.photoData != nil)
             }
-            guard hasData else { continue }
+            if hasData { availablePeriods.append(period) }
+        }
 
+        // 기간이 1개 이하면 필터 불필요 → 숨김
+        if availablePeriods.count <= 1 {
+            periodScrollView.isHidden = true
+            selectedPeriod = .all
+            return
+        }
+
+        periodScrollView.isHidden = false
+        let allPeriods: [Period] = [.all] + availablePeriods
+
+        for period in allPeriods {
             let btn = UIButton(type: .system)
             btn.setTitle(period.title, for: .normal)
             btn.titleLabel?.font = DS.font(12)
