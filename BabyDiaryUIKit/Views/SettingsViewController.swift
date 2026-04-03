@@ -305,8 +305,8 @@ class SettingsViewController: UIViewController {
         NSLayoutConstraint.activate([
             elephantImageView.leadingAnchor.constraint(equalTo: toggleContainer.leadingAnchor),
             elephantImageView.centerYAnchor.constraint(equalTo: toggleContainer.centerYAnchor),
-            elephantImageView.heightAnchor.constraint(equalToConstant: 30),
-            elephantImageView.widthAnchor.constraint(equalToConstant: 60),
+            elephantImageView.heightAnchor.constraint(equalToConstant: 32),
+            elephantImageView.widthAnchor.constraint(equalToConstant: 64),
 
             elephantToggle.trailingAnchor.constraint(equalTo: toggleContainer.trailingAnchor),
             elephantToggle.centerYAnchor.constraint(equalTo: toggleContainer.centerYAnchor),

@@ -1008,7 +1008,10 @@ class MinibookViewController: UIViewController {
         let babyName = baby?.name ?? "아기"
         let allPages = pages
 
-        // PDF 크기 (고해상도 벡터 렌더링)
+        // 미리보기와 동일한 크기로 렌더링 → 고해상도 비트맵 → PDF
+        let renderW = UIScreen.main.bounds.width * 0.8
+        let renderH = renderW * 128.0 / 94.0
+        let renderSize = CGSize(width: renderW, height: renderH)
         let pdfW: CGFloat = 94 * 4
         let pdfH: CGFloat = 128 * 4
         let pageRect = CGRect(x: 0, y: 0, width: pdfW, height: pdfH)
@@ -1020,8 +1023,10 @@ class MinibookViewController: UIViewController {
             let data = renderer.pdfData { context in
                 for page in allPages {
                     context.beginPage()
-                    // PDF 컨텍스트에 직접 벡터 드로잉 (비트맵 변환 없이 선명한 텍스트)
-                    self.drawPageDirectly(page: page, size: CGSize(width: pdfW, height: pdfH), context: context.cgContext)
+                    // 미리보기 크기로 4x 해상도 렌더링 (레이아웃 완벽 일치)
+                    if let image = self.renderPageToImage(page: page, size: renderSize, renderScale: 4.0) {
+                        image.draw(in: pageRect)
+                    }
                 }
             }
 
@@ -1058,18 +1063,9 @@ class MinibookViewController: UIViewController {
         switch page {
         case .cover:
             if let data = coverPhotoData, let image = UIImage(data: data) {
-                // aspectFill로 그리기 (찌그러짐 방지)
-                let imgSize = image.size
-                let widthRatio = size.width / imgSize.width
-                let heightRatio = size.height / imgSize.height
-                let fillScale = max(widthRatio, heightRatio)
-                let drawW = imgSize.width * fillScale
-                let drawH = imgSize.height * fillScale
-                let drawRect = CGRect(x: (size.width - drawW) / 2, y: (size.height - drawH) / 2, width: drawW, height: drawH)
-                context.saveGState()
-                context.clip(to: rect)
-                image.draw(in: drawRect)
-                context.restoreGState()
+                // aspectFill 크롭 이미지 생성
+                let filledImage = Self.aspectFillImage(image, targetSize: size)
+                filledImage.draw(in: rect)
                 // 하단 그라디언트
                 let gradientColors = [UIColor.clear.cgColor, UIColor(hex: "FFFBF0").withAlphaComponent(0.6).cgColor]
                 let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: gradientColors as CFArray, locations: [0.0, 1.0])!
@@ -1252,8 +1248,10 @@ class MinibookViewController: UIViewController {
         }
     }
 
-    private func renderPageToImage(page: PageContent, size: CGSize) -> UIImage? {
-        let renderer = UIGraphicsImageRenderer(size: size)
+    private func renderPageToImage(page: PageContent, size: CGSize, renderScale: CGFloat = 0) -> UIImage? {
+        let format = UIGraphicsImageRendererFormat()
+        if renderScale > 0 { format.scale = renderScale }
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
         return renderer.image { ctx in
             let rect = CGRect(origin: .zero, size: size)
             let context = ctx.cgContext
@@ -1451,6 +1449,20 @@ class MinibookViewController: UIViewController {
                     (countText as NSString).draw(at: CGPoint(x: (size.width - countSize.width) / 2, y: size.height / 2 + 50), withAttributes: countAttrs)
                 }
             }
+        }
+    }
+
+    private static func aspectFillImage(_ image: UIImage, targetSize: CGSize) -> UIImage {
+        let imgSize = image.size
+        let widthRatio = targetSize.width / imgSize.width
+        let heightRatio = targetSize.height / imgSize.height
+        let fillScale = max(widthRatio, heightRatio)
+        let drawSize = CGSize(width: imgSize.width * fillScale, height: imgSize.height * fillScale)
+        let origin = CGPoint(x: (targetSize.width - drawSize.width) / 2, y: (targetSize.height - drawSize.height) / 2)
+
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: origin, size: drawSize))
         }
     }
 
