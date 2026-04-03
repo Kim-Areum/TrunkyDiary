@@ -14,13 +14,48 @@ class MinibookViewController: UIViewController {
         case backCover
     }
 
+    // MARK: - Period Filter
+
+    private enum Period: Int, CaseIterable {
+        case all = -1
+        case months1to12 = 0
+        case months13to24 = 1
+        case age2 = 2
+        case age3 = 3
+        case age4plus = 4
+
+        var title: String {
+            switch self {
+            case .all: return "전체"
+            case .months1to12: return "1~12개월"
+            case .months13to24: return "13~24개월"
+            case .age2: return "만 2세"
+            case .age3: return "만 3세"
+            case .age4plus: return "만 4세~"
+            }
+        }
+
+        func contains(monthAge: Int) -> Bool {
+            switch self {
+            case .all: return true
+            case .months1to12: return monthAge >= 0 && monthAge < 12
+            case .months13to24: return monthAge >= 12 && monthAge < 24
+            case .age2: return monthAge >= 24 && monthAge < 36
+            case .age3: return monthAge >= 36 && monthAge < 48
+            case .age4plus: return monthAge >= 48
+            }
+        }
+    }
+
     // MARK: - Properties
 
+    private var allEntries: [CDDiaryEntry] = []
     private var entries: [CDDiaryEntry] = []
     private var pages: [PageContent] = []
     private var currentPage = 0
     private var coverPhotoData: Data?
     private var isExporting = false
+    private var selectedPeriod: Period = .all
 
     private let coverKey = "minibook_cover_photo"
     private let firstPageWithPhotoChars = 210
@@ -36,6 +71,8 @@ class MinibookViewController: UIViewController {
     private let lastBtn = UIButton(type: .system)
     private let exportButton = UIButton(type: .system)
     private var exportOverlay: UIView?
+    private let periodScrollView = UIScrollView()
+    private let periodStack = UIStackView()
 
     // MARK: - Lifecycle
 
@@ -43,6 +80,7 @@ class MinibookViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = DS.bgBase
         setupNavBar()
+        setupPeriodSelector()
         setupPageContainer()
         setupNavButtons()
         setupSwipeGestures()
@@ -56,12 +94,66 @@ class MinibookViewController: UIViewController {
     // MARK: - Data
 
     private func loadData() {
-        entries = CoreDataStack.shared.fetchEntries(sortAscending: true)
+        allEntries = CoreDataStack.shared.fetchEntries(sortAscending: true)
         coverPhotoData = UserDefaults.standard.data(forKey: coverKey)
+        filterEntries()
+        buildAvailablePeriods()
+    }
+
+    private func filterEntries() {
+        let baby = CoreDataStack.shared.fetchBaby()
+        if selectedPeriod == .all {
+            entries = allEntries
+        } else {
+            entries = allEntries.filter { entry in
+                let monthAge = baby.map { monthsBetween(from: $0.birthDate, to: entry.date) } ?? 0
+                return selectedPeriod.contains(monthAge: monthAge)
+            }
+        }
         buildPages()
-        currentPage = min(currentPage, max(pages.count - 1, 0))
+        currentPage = 0
         renderCurrentPage()
         updateNavButtons()
+    }
+
+    private func buildAvailablePeriods() {
+        let baby = CoreDataStack.shared.fetchBaby()
+        periodStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        for period in Period.allCases {
+            // "전체"는 항상 표시, 나머지는 해당 기간에 데이터가 있을 때만
+            let hasData = period == .all || allEntries.contains { entry in
+                let monthAge = baby.map { monthsBetween(from: $0.birthDate, to: entry.date) } ?? 0
+                return period.contains(monthAge: monthAge) && (!entry.text.isEmpty || entry.photoData != nil)
+            }
+            guard hasData else { continue }
+
+            let btn = UIButton(type: .system)
+            btn.setTitle(period.title, for: .normal)
+            btn.titleLabel?.font = DS.font(12)
+            btn.tag = period.rawValue + 100
+            btn.layer.cornerRadius = 14
+            btn.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+            btn.addTarget(self, action: #selector(periodTapped(_:)), for: .touchUpInside)
+
+            if period == selectedPeriod {
+                btn.backgroundColor = DS.accent
+                btn.setTitleColor(.white, for: .normal)
+            } else {
+                btn.backgroundColor = DS.bgSubtle
+                btn.setTitleColor(DS.fgNeutral, for: .normal)
+            }
+
+            periodStack.addArrangedSubview(btn)
+        }
+    }
+
+    @objc private func periodTapped(_ sender: UIButton) {
+        let rawValue = sender.tag - 100
+        guard let period = Period(rawValue: rawValue) else { return }
+        selectedPeriod = period
+        filterEntries()
+        buildAvailablePeriods()
     }
 
     private func buildPages() {
@@ -256,6 +348,32 @@ class MinibookViewController: UIViewController {
         ])
     }
 
+    // MARK: - Period Selector
+
+    private func setupPeriodSelector() {
+        periodScrollView.showsHorizontalScrollIndicator = false
+        periodScrollView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(periodScrollView)
+
+        periodStack.axis = .horizontal
+        periodStack.spacing = 8
+        periodStack.translatesAutoresizingMaskIntoConstraints = false
+        periodScrollView.addSubview(periodStack)
+
+        NSLayoutConstraint.activate([
+            periodScrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 58),
+            periodScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            periodScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            periodScrollView.heightAnchor.constraint(equalToConstant: 36),
+
+            periodStack.topAnchor.constraint(equalTo: periodScrollView.topAnchor),
+            periodStack.leadingAnchor.constraint(equalTo: periodScrollView.leadingAnchor),
+            periodStack.trailingAnchor.constraint(equalTo: periodScrollView.trailingAnchor),
+            periodStack.bottomAnchor.constraint(equalTo: periodScrollView.bottomAnchor),
+            periodStack.heightAnchor.constraint(equalTo: periodScrollView.heightAnchor),
+        ])
+    }
+
     // MARK: - Page Container
 
     private func setupPageContainer() {
@@ -263,7 +381,7 @@ class MinibookViewController: UIViewController {
         view.addSubview(pageContainerView)
 
         NSLayoutConstraint.activate([
-            pageContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 99),
+            pageContainerView.topAnchor.constraint(equalTo: periodScrollView.bottomAnchor, constant: 40),
             pageContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             pageContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80),

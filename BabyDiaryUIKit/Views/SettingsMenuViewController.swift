@@ -33,7 +33,7 @@ final class SettingsMenuViewController: UIViewController {
         NSLayoutConstraint.activate([
             cardView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             cardView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            cardView.widthAnchor.constraint(equalToConstant: 300),
+            cardView.widthAnchor.constraint(equalToConstant: 240),
         ])
 
         let stack = UIStackView()
