@@ -1,23 +1,36 @@
 import CoreData
+import WidgetKit
 
 final class CoreDataStack {
     static let shared = CoreDataStack()
 
+    private static let appGroupID = "group.io.analoglab.TrunkyDiary"
+
+    private static var appGroupStoreURL: URL {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)!
+            .appendingPathComponent("BabyDiary.sqlite")
+    }
+
     lazy var persistentContainer: NSPersistentCloudKitContainer = {
         let container = NSPersistentCloudKitContainer(name: "BabyDiary")
 
-        let description = container.persistentStoreDescriptions.first
-        description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        description?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        // 기존 데이터를 App Group으로 마이그레이션
+        migrateStoreIfNeeded(to: Self.appGroupStoreURL)
+
+        let description = NSPersistentStoreDescription(url: Self.appGroupStoreURL)
+        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
         // iCloud 동기화 설정 (명시적으로 활성화한 경우만)
         if UserDefaults.standard.bool(forKey: "iCloudSyncEnabled") {
-            description?.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+            description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
                 containerIdentifier: "iCloud.io.analoglab.TrunkyDiary"
             )
         } else {
-            description?.cloudKitContainerOptions = nil
+            description.cloudKitContainerOptions = nil
         }
+
+        container.persistentStoreDescriptions = [description]
 
         container.loadPersistentStores { _, error in
             if let error = error {
@@ -29,6 +42,33 @@ final class CoreDataStack {
         return container
     }()
 
+    private func migrateStoreIfNeeded(to targetURL: URL) {
+        let defaultURL = NSPersistentContainer.defaultDirectoryURL()
+            .appendingPathComponent("BabyDiary.sqlite")
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: defaultURL.path),
+              !fm.fileExists(atPath: targetURL.path) else { return }
+
+        for ext in ["", "-wal", "-shm"] {
+            let src = defaultURL.deletingPathExtension()
+                .appendingPathExtension("sqlite\(ext)")
+            let dst = targetURL.deletingPathExtension()
+                .appendingPathExtension("sqlite\(ext)")
+            if fm.fileExists(atPath: src.path) {
+                try? fm.copyItem(at: src, to: dst)
+            }
+        }
+
+        // External binary storage 디렉토리 복사
+        let storesDir = NSPersistentContainer.defaultDirectoryURL()
+            .appendingPathComponent(".BabyDiary_SUPPORT")
+        let targetDir = targetURL.deletingLastPathComponent()
+            .appendingPathComponent(".BabyDiary_SUPPORT")
+        if fm.fileExists(atPath: storesDir.path), !fm.fileExists(atPath: targetDir.path) {
+            try? fm.copyItem(at: storesDir, to: targetDir)
+        }
+    }
+
     var viewContext: NSManagedObjectContext {
         persistentContainer.viewContext
     }
@@ -38,6 +78,7 @@ final class CoreDataStack {
         guard context.hasChanges else { return }
         do {
             try context.save()
+            WidgetCenter.shared.reloadAllTimelines()
         } catch {
             print("Core Data 저장 실패: \(error)")
         }
