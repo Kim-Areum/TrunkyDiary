@@ -1,7 +1,7 @@
 #!/bin/bash
 # xcodegen generate 후 실행: SystemCapabilities 주입
 cd "$(dirname "$0")/.."
-PBXPROJ="BabyDiaryUIKit.xcodeproj/project.pbxproj"
+PBXPROJ="TrunkyDiary.xcodeproj/project.pbxproj"
 
 # 이미 추가되어 있으면 스킵
 if grep -q "SystemCapabilities" "$PBXPROJ"; then

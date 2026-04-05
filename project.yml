@@ -1,4 +1,4 @@
-name: BabyDiaryUIKit
+name: TrunkyDiary
 options:
   bundleIdPrefix: io.analoglab
   deploymentTarget:
@@ -6,26 +6,26 @@ options:
   xcodeVersion: "26.4"
 settings:
   base:
-    INFOPLIST_FILE: BabyDiaryUIKit/Info.plist
+    INFOPLIST_FILE: TrunkyDiary/Info.plist
     PRODUCT_BUNDLE_IDENTIFIER: io.analoglab.TrunkyDiary
     GENERATE_INFOPLIST_FILE: false
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: 74W3FA8FLB
 targets:
-  BabyDiaryUIKit:
+  TrunkyDiary:
     type: application
     platform: iOS
     sources:
-      - path: BabyDiaryUIKit
+      - path: TrunkyDiary
         excludes:
           - "**/*.plist"
     dependencies:
       - target: BabyDiaryWidget
     settings:
       base:
-        INFOPLIST_FILE: BabyDiaryUIKit/Info.plist
+        INFOPLIST_FILE: TrunkyDiary/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        CODE_SIGN_ENTITLEMENTS: BabyDiaryUIKit/BabyDiaryUIKit.entitlements
+        CODE_SIGN_ENTITLEMENTS: TrunkyDiary/TrunkyDiary.entitlements
   BabyDiaryWidget:
     type: app-extension
     platform: iOS
@@ -33,10 +33,10 @@ targets:
       - path: BabyDiaryWidget
         excludes:
           - "**/*.plist"
-      - path: BabyDiaryUIKit/Models/CDBaby+CoreDataClass.swift
-      - path: BabyDiaryUIKit/Models/CDDiaryEntry+CoreDataClass.swift
-      - path: BabyDiaryUIKit/BabyDiary.xcdatamodeld
-      - path: BabyDiaryUIKit/Resources/Ownglyph_PDH.ttf
+      - path: TrunkyDiary/Models/CDBaby+CoreDataClass.swift
+      - path: TrunkyDiary/Models/CDDiaryEntry+CoreDataClass.swift
+      - path: TrunkyDiary/BabyDiary.xcdatamodeld
+      - path: TrunkyDiary/Resources/Ownglyph_PDH.ttf
         buildPhase: resources
     settings:
       base:
