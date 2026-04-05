@@ -57,7 +57,7 @@ class MinibookViewController: UIViewController {
     private var isExporting = false
     private var selectedPeriod: Period = .all
 
-    private let coverKey = "minibook_cover_photo"
+    private let coverKey = "minibook_cover_photo" // legacy, migrated to Core Data
     private let firstPageWithPhotoChars = 210
     private let firstPageNoPhotoChars = 450
     private let continuationChars = 500
@@ -95,7 +95,16 @@ class MinibookViewController: UIViewController {
 
     private func loadData() {
         allEntries = CoreDataStack.shared.fetchEntries(sortAscending: true)
-        coverPhotoData = UserDefaults.standard.data(forKey: coverKey)
+        let baby = CoreDataStack.shared.fetchBaby()
+        // Core Data에서 로드, 없으면 레거시 UserDefaults에서 마이그레이션
+        if let data = baby?.coverPhotoData {
+            coverPhotoData = data
+        } else if let legacyData = UserDefaults.standard.data(forKey: coverKey) {
+            coverPhotoData = legacyData
+            baby?.coverPhotoData = legacyData
+            CoreDataStack.shared.save()
+            UserDefaults.standard.removeObject(forKey: coverKey)
+        }
         filterEntries()
         buildAvailablePeriods()
     }
@@ -1504,8 +1513,9 @@ extension MinibookViewController: CustomPhotoPickerDelegate {
         let normalized = Self.normalizeOrientation(image)
         let data = normalized.jpegData(compressionQuality: 0.8)
         coverPhotoData = data
-        if let data = data {
-            UserDefaults.standard.set(data, forKey: coverKey)
+        if let baby = CoreDataStack.shared.fetchBaby() {
+            baby.coverPhotoData = data
+            CoreDataStack.shared.save()
         }
         renderCurrentPage()
     }

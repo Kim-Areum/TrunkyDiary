@@ -117,7 +117,11 @@ class SpeechManager {
         let dir = Self.recordingsDirectory()
         playQueue = fileNames.compactMap { name in
             let url = dir.appendingPathComponent(name)
-            return FileManager.default.fileExists(atPath: url.path) ? url : nil
+            if !FileManager.default.fileExists(atPath: url.path) {
+                try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+                return nil
+            }
+            return url
         }
         playCompletion = completion
 
@@ -172,7 +176,12 @@ class SpeechManager {
     /// 단일 파일 재생 (특정 시간부터)
     func playSingle(fileName: String, from time: TimeInterval = 0, completion: @escaping () -> Void) {
         let url = Self.recordingsDirectory().appendingPathComponent(fileName)
-        guard FileManager.default.fileExists(atPath: url.path) else { return }
+
+        // iCloud 파일이 아직 다운로드 안 됐으면 다운로드 트리거
+        if !FileManager.default.fileExists(atPath: url.path) {
+            try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+            return
+        }
 
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .default, options: [])
@@ -268,13 +277,52 @@ class SpeechManager {
 
     // MARK: - Directory
 
+    /// iCloud Drive 컨테이너의 Recordings 폴더 (없으면 로컬 fallback)
     static func recordingsDirectory() -> URL {
+        if let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.io.analoglab.TrunkyDiary") {
+            let dir = iCloudURL.appendingPathComponent("Documents/Recordings")
+            if !FileManager.default.fileExists(atPath: dir.path) {
+                try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            }
+            return dir
+        }
+        // iCloud 사용 불가 시 로컬
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Recordings")
         if !FileManager.default.fileExists(atPath: dir.path) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         }
         return dir
+    }
+
+    /// 로컬 Recordings 폴더 (마이그레이션용)
+    private static var localRecordingsDirectory: URL {
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Recordings")
+        if !FileManager.default.fileExists(atPath: dir.path) {
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        return dir
+    }
+
+    /// 로컬에 있는 기존 녹음 파일을 iCloud Drive로 마이그레이션
+    static func migrateLocalToiCloud() {
+        guard let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.io.analoglab.TrunkyDiary") else { return }
+        let iCloudDir = iCloudURL.appendingPathComponent("Documents/Recordings")
+        if !FileManager.default.fileExists(atPath: iCloudDir.path) {
+            try? FileManager.default.createDirectory(at: iCloudDir, withIntermediateDirectories: true)
+        }
+
+        let localDir = localRecordingsDirectory
+        guard let files = try? FileManager.default.contentsOfDirectory(atPath: localDir.path) else { return }
+
+        for file in files where file.hasSuffix(".m4a") {
+            let src = localDir.appendingPathComponent(file)
+            let dst = iCloudDir.appendingPathComponent(file)
+            if !FileManager.default.fileExists(atPath: dst.path) {
+                try? FileManager.default.setUbiquitous(true, itemAt: src, destinationURL: dst)
+            }
+        }
     }
 }
 

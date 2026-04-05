@@ -6,6 +6,7 @@ public class CDBaby: NSManagedObject {
     @NSManaged public var name: String
     @NSManaged public var birthDate: Date
     @NSManaged public var photoData: Data?
+    @NSManaged public var coverPhotoData: Data?
     @NSManaged public var createdAt: Date
 
     var dayCount: Int {
