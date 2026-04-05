@@ -37,31 +37,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
-    /// iCloud 동기화 완료를 기다림 (최대 8초)
+    /// iCloud 동기화 완료를 기다림 (최대 10초)
     private func waitForSync() {
+        // viewContext에 데이터가 머지되는 것을 감지
         syncObservation = NotificationCenter.default.addObserver(
-            forName: NSPersistentCloudKitContainer.eventChangedNotification,
-            object: nil,
-            queue: nil
-        ) { [weak self] notification in
-            guard let event = notification.userInfo?[
-                NSPersistentCloudKitContainer.eventNotificationUserInfoKey
-            ] as? NSPersistentCloudKitContainer.Event else { return }
-
-            // import 완료 시 라우팅
-            if event.type == .import, event.endDate != nil {
-                DispatchQueue.main.async {
-                    self?.finishWaiting()
-                }
+            forName: .NSManagedObjectContextObjectsDidChange,
+            object: CoreDataStack.shared.viewContext,
+            queue: .main
+        ) { [weak self] _ in
+            // 데이터가 실제로 들어왔는지 확인
+            if CoreDataStack.shared.fetchBaby() != nil {
+                self?.finishWaiting()
             }
         }
 
-        // 타임아웃 8초 — 동기화가 안 오면 그냥 진행
+        // 타임아웃 10초
         let timeout = DispatchWorkItem { [weak self] in
             self?.finishWaiting()
         }
         syncTimeout = timeout
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8, execute: timeout)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: timeout)
     }
 
     private func finishWaiting() {
