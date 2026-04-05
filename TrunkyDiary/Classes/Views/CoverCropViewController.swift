@@ -58,7 +58,9 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         saveButton.setTitleColor(DS.fgStrong, for: .normal)
         saveButton.backgroundColor = DS.accent
         saveButton.layer.cornerRadius = 15
-        saveButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+        var saveBtnConfig = saveButton.configuration ?? UIButton.Configuration.plain()
+        saveBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 14, bottom: 6, trailing: 14)
+        saveButton.configuration = saveBtnConfig
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
         saveButton.translatesAutoresizingMaskIntoConstraints = false
 
@@ -184,11 +186,11 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
 
     @objc private func saveTapped() {
         let cropSize = cropScrollView.bounds.size
-        let scale = UIScreen.main.scale
+        _ = UIScreen.main.scale
 
         let renderer = UIGraphicsImageRenderer(size: cropSize)
         let cropped = renderer.image { _ in
-            let zoomScale = cropScrollView.zoomScale
+            _ = cropScrollView.zoomScale
             let offset = cropScrollView.contentOffset
 
             let drawSize = CGSize(

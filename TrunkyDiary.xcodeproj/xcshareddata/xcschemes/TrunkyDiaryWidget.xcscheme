@@ -19,7 +19,7 @@
                BlueprintIdentifier = "F4B67656404C11695454FCB1"
                BuildableName = "TrunkyDiaryWidget.appex"
                BlueprintName = "TrunkyDiaryWidget"
-               ReferencedContainer = "container:TrunkyDiary.xcodeproj">
+               ReferencedContainer = "container:&#x110b;&#x1175;&#x1105;&#x1165;&#x11c2;&#x1100;&#x1166; &#x1103;&#x116c;&#x110b;&#x1165; .xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -33,7 +33,7 @@
                BlueprintIdentifier = "CF3AD219B7CEE628C5287467"
                BuildableName = "TrunkyDiary.app"
                BlueprintName = "TrunkyDiary"
-               ReferencedContainer = "container:TrunkyDiary.xcodeproj">
+               ReferencedContainer = "container:&#x110b;&#x1175;&#x1105;&#x1165;&#x11c2;&#x1100;&#x1166; &#x1103;&#x116c;&#x110b;&#x1165; .xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -65,7 +65,7 @@
             BlueprintIdentifier = "CF3AD219B7CEE628C5287467"
             BuildableName = "TrunkyDiary.app"
             BlueprintName = "TrunkyDiary"
-            ReferencedContainer = "container:TrunkyDiary.xcodeproj">
+            ReferencedContainer = "container:&#x110b;&#x1175;&#x1105;&#x1165;&#x11c2;&#x1100;&#x1166; &#x1103;&#x116c;&#x110b;&#x1165; .xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
@@ -101,7 +101,7 @@
             BlueprintIdentifier = "CF3AD219B7CEE628C5287467"
             BuildableName = "TrunkyDiary.app"
             BlueprintName = "TrunkyDiary"
-            ReferencedContainer = "container:TrunkyDiary.xcodeproj">
+            ReferencedContainer = "container:&#x110b;&#x1175;&#x1105;&#x1165;&#x11c2;&#x1100;&#x1166; &#x1103;&#x116c;&#x110b;&#x1165; .xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

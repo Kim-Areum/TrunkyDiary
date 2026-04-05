@@ -49,7 +49,9 @@ class DatePickerSheetViewController: UIViewController, UIPickerViewDelegate, UIP
         doneButton.setTitleColor(DS.fgStrong, for: .normal)
         doneButton.backgroundColor = DS.accent
         doneButton.layer.cornerRadius = 15
-        doneButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+        var doneBtnConfig = doneButton.configuration ?? UIButton.Configuration.plain()
+        doneBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 14, bottom: 6, trailing: 14)
+        doneButton.configuration = doneBtnConfig
         doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         navBar.addSubview(doneButton)

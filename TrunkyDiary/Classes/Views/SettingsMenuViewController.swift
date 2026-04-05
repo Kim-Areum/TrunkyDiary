@@ -63,7 +63,7 @@ final class SettingsMenuViewController: UIViewController {
         cloudLabel.font = DS.font(14)
         cloudLabel.textColor = DS.fgStrong
 
-        iCloudSwitch.isOn = UserDefaults.standard.bool(forKey: "iCloudSyncEnabled")
+        iCloudSwitch.isOn = !(UserDefaults.standard.object(forKey: "iCloudSyncDisabled") as? Bool ?? false)
         iCloudSwitch.onTintColor = DS.accent
         iCloudSwitch.addTarget(self, action: #selector(iCloudToggled), for: .valueChanged)
 
@@ -142,9 +142,9 @@ final class SettingsMenuViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func iCloudToggled() {
-        let enabled = iCloudSwitch.isOn
-        UserDefaults.standard.set(enabled, forKey: "iCloudSyncEnabled")
-        syncStatusLabel.text = enabled ? "앱 재시작 후 적용됩니다" : "동기화 꺼짐"
+        let disabled = !iCloudSwitch.isOn
+        UserDefaults.standard.set(disabled, forKey: "iCloudSyncDisabled")
+        syncStatusLabel.text = iCloudSwitch.isOn ? "앱 재시작 후 적용됩니다" : "동기화 꺼짐"
     }
 
     @objc private func bgTapped(_ gesture: UITapGestureRecognizer) {

@@ -328,7 +328,9 @@ private class FeedEntryCell: UITableViewCell {
         audioButton.tintColor = DS.fgMuted
         audioButton.backgroundColor = DS.bgSubtle
         audioButton.layer.cornerRadius = 12
-        audioButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
+        var audioBtnConfig = audioButton.configuration ?? UIButton.Configuration.plain()
+        audioBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+        audioButton.configuration = audioBtnConfig
         audioButton.isHidden = true
         audioButton.addTarget(self, action: #selector(audioTapped), for: .touchUpInside)
         audioButton.translatesAutoresizingMaskIntoConstraints = false

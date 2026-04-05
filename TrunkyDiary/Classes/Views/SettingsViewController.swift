@@ -256,7 +256,9 @@ class SettingsViewController: UIViewController {
         birthButton.titleLabel?.font = DS.font(14)
         birthButton.setTitleColor(DS.fgStrong, for: .normal)
         birthButton.contentHorizontalAlignment = .left
-        birthButton.contentEdgeInsets = UIEdgeInsets(top: 14, left: 14, bottom: 14, right: 14)
+        var birthBtnConfig = birthButton.configuration ?? UIButton.Configuration.plain()
+        birthBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14)
+        birthButton.configuration = birthBtnConfig
         birthButton.backgroundColor = DS.bgBase
         birthButton.layer.cornerRadius = 12
         birthButton.layer.borderWidth = 1

@@ -418,7 +418,9 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         // Audio count button
         audioCountButton.translatesAutoresizingMaskIntoConstraints = false
         audioCountButton.addTarget(self, action: #selector(audioCountTapped), for: .touchUpInside)
-        audioCountButton.contentEdgeInsets = UIEdgeInsets(top: 3, left: 8, bottom: 3, right: 8)
+        var audioBtnConfig = audioCountButton.configuration ?? UIButton.Configuration.plain()
+        audioBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 3, leading: 8, bottom: 3, trailing: 8)
+        audioCountButton.configuration = audioBtnConfig
         audioCountButton.backgroundColor = DS.bgSubtle
         audioCountButton.layer.cornerRadius = 12
         cardBodyView.addSubview(audioCountButton)

@@ -146,7 +146,9 @@ class MinibookViewController: UIViewController {
             btn.titleLabel?.font = DS.font(12)
             btn.tag = period.rawValue + 100
             btn.layer.cornerRadius = 14
-            btn.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+            var periodBtnConfig = btn.configuration ?? UIButton.Configuration.plain()
+            periodBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 14, bottom: 6, trailing: 14)
+            btn.configuration = periodBtnConfig
             btn.addTarget(self, action: #selector(periodTapped(_:)), for: .touchUpInside)
 
             if period == selectedPeriod {
@@ -195,7 +197,6 @@ class MinibookViewController: UIViewController {
                 let text = entry.text
                 let hasPhoto = entry.photoData != nil
                 let pageWidth = UIScreen.main.bounds.width * 0.8
-                let pageHeight = pageWidth * 128.0 / 94.0
                 let textWidth = pageWidth - 40 // 좌우 패딩 24씩
 
                 // 줄 수 고정
@@ -416,7 +417,9 @@ class MinibookViewController: UIViewController {
 
         for btn in [firstBtn, prevBtn, nextBtn, lastBtn] {
             btn.translatesAutoresizingMaskIntoConstraints = false
-            btn.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+            var navBtnConfig = btn.configuration ?? UIButton.Configuration.plain()
+            navBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+            btn.configuration = navBtnConfig
         }
 
         firstBtn.setImage(UIImage(systemName: "chevron.backward.2", withConfiguration: btnConfig), for: .normal)

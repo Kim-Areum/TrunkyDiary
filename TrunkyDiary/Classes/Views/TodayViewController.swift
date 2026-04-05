@@ -470,7 +470,9 @@ class TodayViewController: UIViewController {
         audioCountButton.tintColor = DS.fgMuted
         audioCountButton.backgroundColor = DS.bgSubtle
         audioCountButton.layer.cornerRadius = 12
-        audioCountButton.contentEdgeInsets = UIEdgeInsets(top: 3, left: 8, bottom: 3, right: 8)
+        var audioBtnConfig = audioCountButton.configuration ?? UIButton.Configuration.plain()
+        audioBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 3, leading: 8, bottom: 3, trailing: 8)
+        audioCountButton.configuration = audioBtnConfig
         audioCountButton.isHidden = true
         audioCountButton.addTarget(self, action: #selector(audioCountTapped), for: .touchUpInside)
         bodyView.addSubview(audioCountButton)
@@ -511,7 +513,7 @@ class TodayViewController: UIViewController {
         let icon = UIImage(systemName: iconName, withConfiguration: config)?
             .withTintColor(iconColor, renderingMode: .alwaysOriginal)
 
-        var attString = NSMutableAttributedString()
+        let attString = NSMutableAttributedString()
         let iconAttachment = NSTextAttachment()
         iconAttachment.image = icon
         attString.append(NSAttributedString(attachment: iconAttachment))
@@ -615,7 +617,7 @@ class TodayViewController: UIViewController {
     }
 
     @objc private func moreTapped() {
-        guard let entry = selectedEntry else { return }
+        guard selectedEntry != nil else { return }
 
         let overlay = UIView()
         overlay.frame = view.window?.bounds ?? view.bounds
@@ -706,7 +708,7 @@ class TodayViewController: UIViewController {
 
     @objc private func deleteFromMenu() {
         dismissMoreMenu()
-        guard let entry = selectedEntry else { return }
+        guard selectedEntry != nil else { return }
 
         // 삭제 확인 팝업
         let overlay = UIView()

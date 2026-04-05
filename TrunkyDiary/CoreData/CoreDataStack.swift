@@ -21,8 +21,9 @@ final class CoreDataStack {
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
-        // iCloud 동기화 설정 (명시적으로 활성화한 경우만)
-        if UserDefaults.standard.bool(forKey: "iCloudSyncEnabled") {
+        // iCloud 동기화 설정 (기본 켜짐, 명시적으로 끈 경우만 비활성화)
+        let iCloudDisabled = UserDefaults.standard.object(forKey: "iCloudSyncDisabled") as? Bool ?? false
+        if !iCloudDisabled {
             description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
                 containerIdentifier: "iCloud.io.analoglab.TrunkyDiary"
             )
@@ -35,6 +36,18 @@ final class CoreDataStack {
         container.loadPersistentStores { _, error in
             if let error = error {
                 print("Core Data 로드 실패: \(error)")
+                // CloudKit 실패 시 iCloud 끄고 로컬로 재시도
+                if description.cloudKitContainerOptions != nil {
+                    print("iCloud 동기화 비활성화 후 재시도")
+                    description.cloudKitContainerOptions = nil
+                    UserDefaults.standard.set(true, forKey: "iCloudSyncDisabled")
+                    container.persistentStoreDescriptions = [description]
+                    container.loadPersistentStores { _, retryError in
+                        if let retryError = retryError {
+                            print("로컬 Core Data도 실패: \(retryError)")
+                        }
+                    }
+                }
             }
         }
         container.viewContext.automaticallyMergesChangesFromParent = true

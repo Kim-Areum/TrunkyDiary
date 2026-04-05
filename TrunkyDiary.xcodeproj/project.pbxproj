@@ -35,7 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C89E4228EB8E7335C0654F3A /* TrunkyDiaryWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = TrunkyDiaryWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C89E4228EB8E7335C0654F3A /* TrunkyDiaryWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.extensionkit-extension"; path = TrunkyDiaryWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6FC8B726318803206C23447 /* TrunkyDiary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrunkyDiary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
