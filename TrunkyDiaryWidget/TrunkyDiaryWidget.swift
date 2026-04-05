@@ -3,7 +3,7 @@ import SwiftUI
 
 // MARK: - Entry
 
-struct BabyDiaryEntry: TimelineEntry {
+struct TrunkyDiaryEntry: TimelineEntry {
     let date: Date
     let babyName: String
     let dayCount: Int
@@ -13,16 +13,16 @@ struct BabyDiaryEntry: TimelineEntry {
 
 // MARK: - Provider
 
-struct BabyDiaryProvider: TimelineProvider {
-    func placeholder(in context: Context) -> BabyDiaryEntry {
-        BabyDiaryEntry(date: .now, babyName: "아기", dayCount: 1, monthAndDays: "", image: nil)
+struct TrunkyDiaryProvider: TimelineProvider {
+    func placeholder(in context: Context) -> TrunkyDiaryEntry {
+        TrunkyDiaryEntry(date: .now, babyName: "아기", dayCount: 1, monthAndDays: "", image: nil)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (BabyDiaryEntry) -> Void) {
+    func getSnapshot(in context: Context, completion: @escaping (TrunkyDiaryEntry) -> Void) {
         completion(makeEntry(displaySize: context.displaySize))
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<BabyDiaryEntry>) -> Void) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<TrunkyDiaryEntry>) -> Void) {
         let entry = makeEntry(displaySize: context.displaySize)
         let nextMidnight = Calendar.current.startOfDay(
             for: Calendar.current.date(byAdding: .day, value: 1, to: .now)!
@@ -30,7 +30,7 @@ struct BabyDiaryProvider: TimelineProvider {
         completion(Timeline(entries: [entry], policy: .after(nextMidnight)))
     }
 
-    private func makeEntry(displaySize: CGSize) -> BabyDiaryEntry {
+    private func makeEntry(displaySize: CGSize) -> TrunkyDiaryEntry {
         let stack = WidgetCoreDataStack.shared
         let baby = stack.fetchBaby()
         let latestPhoto = stack.fetchLatestEntryWithPhoto()
@@ -40,7 +40,7 @@ struct BabyDiaryProvider: TimelineProvider {
             image = resizedToFill(original, targetSize: displaySize)
         }
 
-        return BabyDiaryEntry(
+        return TrunkyDiaryEntry(
             date: .now,
             babyName: baby?.name ?? "",
             dayCount: baby?.dayCount ?? 1,
@@ -76,8 +76,8 @@ struct BabyDiaryProvider: TimelineProvider {
 
 // MARK: - View
 
-struct BabyDiaryWidgetView: View {
-    let entry: BabyDiaryEntry
+struct TrunkyDiaryWidgetView: View {
+    let entry: TrunkyDiaryEntry
 
     var hasPhoto: Bool { entry.image != nil }
 
@@ -132,16 +132,16 @@ struct BabyDiaryWidgetView: View {
 // MARK: - Widget
 
 @main
-struct BabyDiaryWidgetBundle: Widget {
-    let kind = "BabyDiaryWidget"
+struct TrunkyDiaryWidgetBundle: Widget {
+    let kind = "TrunkyDiaryWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: BabyDiaryProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: TrunkyDiaryProvider()) { entry in
             if #available(iOS 17.0, *) {
-                BabyDiaryWidgetView(entry: entry)
+                TrunkyDiaryWidgetView(entry: entry)
                     .containerBackground(.clear, for: .widget)
             } else {
-                BabyDiaryWidgetView(entry: entry)
+                TrunkyDiaryWidgetView(entry: entry)
             }
         }
         .contentMarginsDisabled()

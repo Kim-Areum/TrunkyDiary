@@ -7,54 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		12D3B34B504CCE2E45AC272B /* DiaryEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76625C20A657A667B0059650 /* DiaryEditorViewController.swift */; };
-		1E1A427182CB66B8537CC19F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 76C15AF20FB66A33213A0CD4 /* Localizable.strings */; };
-		1FA7C12A18901EE1159B183C /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DA7161C85C8BBC7B1DB767 /* SettingsViewController.swift */; };
-		2811D1C71AE72A6E97BAFDBB /* BabyDiaryWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E74C7D4A3CC7EBAEDAA758A /* BabyDiaryWidget.swift */; };
-		292D8141FE393A6173BC5621 /* SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13ACAF9404185F02514376C /* SpeechManager.swift */; };
-		2D070534E31AAFEF6F9967B1 /* AllEntriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F8D10500FF2D976871FEAA0 /* AllEntriesViewController.swift */; };
-		35340DDE060C55B65423D90F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9D3A81D34A1EE0976B5E66A3 /* Assets.xcassets */; };
-		375E8C82EEDDFDB7153985D8 /* CustomPhotoPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0BFF2FF2CEBD277B6368BB /* CustomPhotoPickerViewController.swift */; };
-		383ED6C73B38C8E28F13D5EC /* WidgetDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367B9A416CE03F89B9E8FF6 /* WidgetDesignSystem.swift */; };
-		3E4A9202CFF62238B0B535B8 /* Ownglyph_PDH.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 067F4574037F8889C4F3C9F8 /* Ownglyph_PDH.ttf */; };
-		3F94C5429D0330460E6493F9 /* FullScreenImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8532E6994E2DE1F4EA74DC1 /* FullScreenImageViewController.swift */; };
-		5394C8F5841861FC38EDC4AE /* MonthFeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C24DEAB89F5DAD974E54E92 /* MonthFeedViewController.swift */; };
-		560677E4445790A07FF0BFC9 /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D575B5444FD47118B31FA76C /* MainTabBarController.swift */; };
-		569282306824291493EAA2A8 /* TodayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A562F4AF8357CDD3B50B26 /* TodayViewController.swift */; };
-		57284A98574807FAB7E7612E /* CDBaby+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0971C81CC4DFBC9219E58456 /* CDBaby+CoreDataClass.swift */; };
-		5737A0E3C0A3251B62BC76AF /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72989B6B134D805BAE18087C /* DesignSystem.swift */; };
-		600C6FEAA7C7A35925BFF412 /* DiaryDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FE7148E4A472DAAC4F2CAD /* DiaryDetailViewController.swift */; };
-		7413858471DD380A7DB7038A /* BabyDiary.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 89217BA2793C9F14E2B76BBD /* BabyDiary.xcdatamodeld */; };
-		7A5A904415AE58F58CF580B0 /* CustomAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B25F078D31D1D92C6265293 /* CustomAlertView.swift */; };
-		7D79B0F6ECF3F62911793A8F /* PlaybackPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9333D2C8E4A549F0FE03293 /* PlaybackPopupView.swift */; };
-		87BB312ECD1C329A3E35EC59 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A2D254DA1F64BC0A7F8C5CC /* HomeViewController.swift */; };
-		89109C7667D7D820442C622B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AF45B07DC86FF996512609D /* Assets.xcassets */; };
-		8CE4787596AAEFB1260B35E3 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F356B4BA5C341F6AAC6E89 /* SplashViewController.swift */; };
-		8DEE9B0059B84856BC707185 /* MinibookViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D15A5DC4E15B6DEC1B4F91F /* MinibookViewController.swift */; };
-		91D3C06C55F974DC7F9393FA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD5908563FA605824C46B56 /* SceneDelegate.swift */; };
-		92F15DE16641F1B7CAF2B6F3 /* SettingsMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22B91F2DFF2FF6FAC4C7EC46 /* SettingsMenuViewController.swift */; };
-		9B3197512BBEE9E0077203A4 /* BabySetupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73BA7CDC891020B45BD0CE1D /* BabySetupViewController.swift */; };
-		9B55F956D4C11BCCD0426D98 /* CDDiaryEntry+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9667346F78C4B5071C295718 /* CDDiaryEntry+CoreDataClass.swift */; };
-		A363C27630FE2920CD5AF4E1 /* DatePickerSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602FC25E6BD96434525E45F3 /* DatePickerSheetViewController.swift */; };
-		ADE33A31EE3D8C0A3E3175C0 /* CDDiaryEntry+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9667346F78C4B5071C295718 /* CDDiaryEntry+CoreDataClass.swift */; };
-		BE9583D822B3658C4E95A56E /* BabyDiary.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 89217BA2793C9F14E2B76BBD /* BabyDiary.xcdatamodeld */; };
-		BF0733D159F9AAFC56F8CC62 /* WidgetCoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF5140579482CE6AAB27B08 /* WidgetCoreDataStack.swift */; };
-		DA3E52D1A40BB39ED742E03A /* CDBaby+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0971C81CC4DFBC9219E58456 /* CDBaby+CoreDataClass.swift */; };
-		E5D67F1B8BBDA372966F5941 /* BabyDiaryWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CC968E8826C10AF65CC867FB /* BabyDiaryWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		E649017001440A291D47E80F /* Ownglyph_PDH.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 067F4574037F8889C4F3C9F8 /* Ownglyph_PDH.ttf */; };
-		F07B28F84BCE6CB4EC2A730C /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AD87BA715AD99A4420D05B /* CoreDataStack.swift */; };
-		F254BE47B0F569C7B4BE2E44 /* CoverCropViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5549CF777A15478C3B6C6551 /* CoverCropViewController.swift */; };
-		F5F2579AE0878C7FF2B97892 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F516DDAC6D06FE722276FCE /* AppDelegate.swift */; };
-		FC8F0467FAEDABE02CEC880C /* PushTransitionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96016342B71F00E90C90C322 /* PushTransitionManager.swift */; };
+		D1C23570FF2BCBEE705E8AAB /* TrunkyDiaryWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C89E4228EB8E7335C0654F3A /* TrunkyDiaryWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		6433C64D620D8B298E3FBF2A /* PBXContainerItemProxy */ = {
+		BD227537E148A68C2F4B1BD6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F480E7DB76478A6382EDE592 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 19B96BE323F0B4A8AE7B4162;
-			remoteInfo = BabyDiaryWidget;
+			remoteGlobalIDString = F4B67656404C11695454FCB1;
+			remoteInfo = TrunkyDiaryWidget;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -65,7 +27,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				E5D67F1B8BBDA372966F5941 /* BabyDiaryWidget.appex in Embed Foundation Extensions */,
+				D1C23570FF2BCBEE705E8AAB /* TrunkyDiaryWidget.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -73,180 +35,61 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		067F4574037F8889C4F3C9F8 /* Ownglyph_PDH.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Ownglyph_PDH.ttf; sourceTree = "<group>"; };
-		0971C81CC4DFBC9219E58456 /* CDBaby+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDBaby+CoreDataClass.swift"; sourceTree = "<group>"; };
-		1367B9A416CE03F89B9E8FF6 /* WidgetDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDesignSystem.swift; sourceTree = "<group>"; };
-		1895124F0573382190DED7F2 /* TrunkyDiary.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TrunkyDiary.entitlements; sourceTree = "<group>"; };
-		1E74C7D4A3CC7EBAEDAA758A /* BabyDiaryWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabyDiaryWidget.swift; sourceTree = "<group>"; };
-		22B91F2DFF2FF6FAC4C7EC46 /* SettingsMenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsMenuViewController.swift; sourceTree = "<group>"; };
-		24A562F4AF8357CDD3B50B26 /* TodayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewController.swift; sourceTree = "<group>"; };
-		38F356B4BA5C341F6AAC6E89 /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
-		3C24DEAB89F5DAD974E54E92 /* MonthFeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthFeedViewController.swift; sourceTree = "<group>"; };
-		3FF5140579482CE6AAB27B08 /* WidgetCoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCoreDataStack.swift; sourceTree = "<group>"; };
-		4AF45B07DC86FF996512609D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		4B5AA97B5F8FDEC8987E89FB /* BabyDiaryWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BabyDiaryWidget.entitlements; sourceTree = "<group>"; };
-		4FEB09ECD697D65F8378F3E4 /* BabyDiary.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = BabyDiary.xcdatamodel; sourceTree = "<group>"; };
-		53DA7161C85C8BBC7B1DB767 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
-		5549CF777A15478C3B6C6551 /* CoverCropViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverCropViewController.swift; sourceTree = "<group>"; };
-		56AD87BA715AD99A4420D05B /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
-		5F516DDAC6D06FE722276FCE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		602FC25E6BD96434525E45F3 /* DatePickerSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerSheetViewController.swift; sourceTree = "<group>"; };
-		6B25F078D31D1D92C6265293 /* CustomAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomAlertView.swift; sourceTree = "<group>"; };
-		72989B6B134D805BAE18087C /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
-		73BA7CDC891020B45BD0CE1D /* BabySetupViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabySetupViewController.swift; sourceTree = "<group>"; };
-		76625C20A657A667B0059650 /* DiaryEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryEditorViewController.swift; sourceTree = "<group>"; };
-		76C15AF20FB66A33213A0CD4 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
-		8BD5908563FA605824C46B56 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		8D15A5DC4E15B6DEC1B4F91F /* MinibookViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinibookViewController.swift; sourceTree = "<group>"; };
-		8F8D10500FF2D976871FEAA0 /* AllEntriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesViewController.swift; sourceTree = "<group>"; };
-		96016342B71F00E90C90C322 /* PushTransitionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushTransitionManager.swift; sourceTree = "<group>"; };
-		9667346F78C4B5071C295718 /* CDDiaryEntry+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDDiaryEntry+CoreDataClass.swift"; sourceTree = "<group>"; };
-		9A2D254DA1F64BC0A7F8C5CC /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
-		9D3A81D34A1EE0976B5E66A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		C0FE7148E4A472DAAC4F2CAD /* DiaryDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryDetailViewController.swift; sourceTree = "<group>"; };
-		C9333D2C8E4A549F0FE03293 /* PlaybackPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPopupView.swift; sourceTree = "<group>"; };
-		CC968E8826C10AF65CC867FB /* BabyDiaryWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = BabyDiaryWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		D575B5444FD47118B31FA76C /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
-		E13ACAF9404185F02514376C /* SpeechManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechManager.swift; sourceTree = "<group>"; };
+		C89E4228EB8E7335C0654F3A /* TrunkyDiaryWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = TrunkyDiaryWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F6FC8B726318803206C23447 /* TrunkyDiary.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TrunkyDiary.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F8532E6994E2DE1F4EA74DC1 /* FullScreenImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScreenImageViewController.swift; sourceTree = "<group>"; };
-		FD0BFF2FF2CEBD277B6368BB /* CustomPhotoPickerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPhotoPickerViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXGroup section */
-		0A46CF4C073571E8213842A4 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				0971C81CC4DFBC9219E58456 /* CDBaby+CoreDataClass.swift */,
-				9667346F78C4B5071C295718 /* CDDiaryEntry+CoreDataClass.swift */,
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8E5CE06F2F8205B500EE09F4 /* Exceptions for "TrunkyDiary" folder in "TrunkyDiaryWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				BabyDiary.xcdatamodeld,
+				"Models/CDBaby+CoreDataClass.swift",
+				"Models/CDDiaryEntry+CoreDataClass.swift",
+				Resources/Ownglyph_PDH.ttf,
 			);
-			name = Models;
-			path = TrunkyDiary/Models;
+			target = F4B67656404C11695454FCB1 /* TrunkyDiaryWidget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8E5CDFDE2F82057800EE09F4 /* TrunkyDiaryWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TrunkyDiaryWidget;
 			sourceTree = "<group>";
 		};
-		10D71566775A030A9B5A0757 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				72989B6B134D805BAE18087C /* DesignSystem.swift */,
-				067F4574037F8889C4F3C9F8 /* Ownglyph_PDH.ttf */,
-			);
-			name = Resources;
-			path = TrunkyDiary/Resources;
-			sourceTree = "<group>";
-		};
-		216ED1C8C31CC26CD5F571EC /* CoreData */ = {
-			isa = PBXGroup;
-			children = (
-				56AD87BA715AD99A4420D05B /* CoreDataStack.swift */,
-			);
-			path = CoreData;
-			sourceTree = "<group>";
-		};
-		3830120837C3FE84CA24E386 = {
-			isa = PBXGroup;
-			children = (
-				F318AF93A6ECECC7F0155A9F /* BabyDiaryWidget */,
-				0A46CF4C073571E8213842A4 /* Models */,
-				10D71566775A030A9B5A0757 /* Resources */,
-				A720E238B3C08E2E0E8C1899 /* TrunkyDiary */,
-				E8BB7651FCE63658D930BF53 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		6F997A1549D67E3379259069 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				E13ACAF9404185F02514376C /* SpeechManager.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		A720E238B3C08E2E0E8C1899 /* TrunkyDiary */ = {
-			isa = PBXGroup;
-			children = (
-				5F516DDAC6D06FE722276FCE /* AppDelegate.swift */,
-				4AF45B07DC86FF996512609D /* Assets.xcassets */,
-				76C15AF20FB66A33213A0CD4 /* Localizable.strings */,
-				8BD5908563FA605824C46B56 /* SceneDelegate.swift */,
-				1895124F0573382190DED7F2 /* TrunkyDiary.entitlements */,
-				89217BA2793C9F14E2B76BBD /* BabyDiary.xcdatamodeld */,
-				216ED1C8C31CC26CD5F571EC /* CoreData */,
-				0A46CF4C073571E8213842A4 /* Models */,
-				10D71566775A030A9B5A0757 /* Resources */,
-				6F997A1549D67E3379259069 /* ViewModels */,
-				B7FBB5171C8DE9C9B7CAB930 /* Views */,
+		8E5CE04B2F8205B400EE09F4 /* TrunkyDiary */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8E5CE06F2F8205B500EE09F4 /* Exceptions for "TrunkyDiary" folder in "TrunkyDiaryWidget" target */,
 			);
 			path = TrunkyDiary;
 			sourceTree = "<group>";
 		};
-		B7FBB5171C8DE9C9B7CAB930 /* Views */ = {
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXGroup section */
+		3830120837C3FE84CA24E386 = {
 			isa = PBXGroup;
 			children = (
-				8F8D10500FF2D976871FEAA0 /* AllEntriesViewController.swift */,
-				73BA7CDC891020B45BD0CE1D /* BabySetupViewController.swift */,
-				5549CF777A15478C3B6C6551 /* CoverCropViewController.swift */,
-				6B25F078D31D1D92C6265293 /* CustomAlertView.swift */,
-				FD0BFF2FF2CEBD277B6368BB /* CustomPhotoPickerViewController.swift */,
-				602FC25E6BD96434525E45F3 /* DatePickerSheetViewController.swift */,
-				C0FE7148E4A472DAAC4F2CAD /* DiaryDetailViewController.swift */,
-				76625C20A657A667B0059650 /* DiaryEditorViewController.swift */,
-				F8532E6994E2DE1F4EA74DC1 /* FullScreenImageViewController.swift */,
-				9A2D254DA1F64BC0A7F8C5CC /* HomeViewController.swift */,
-				D575B5444FD47118B31FA76C /* MainTabBarController.swift */,
-				8D15A5DC4E15B6DEC1B4F91F /* MinibookViewController.swift */,
-				3C24DEAB89F5DAD974E54E92 /* MonthFeedViewController.swift */,
-				C9333D2C8E4A549F0FE03293 /* PlaybackPopupView.swift */,
-				96016342B71F00E90C90C322 /* PushTransitionManager.swift */,
-				22B91F2DFF2FF6FAC4C7EC46 /* SettingsMenuViewController.swift */,
-				53DA7161C85C8BBC7B1DB767 /* SettingsViewController.swift */,
-				38F356B4BA5C341F6AAC6E89 /* SplashViewController.swift */,
-				24A562F4AF8357CDD3B50B26 /* TodayViewController.swift */,
+				8E5CE04B2F8205B400EE09F4 /* TrunkyDiary */,
+				8E5CDFDE2F82057800EE09F4 /* TrunkyDiaryWidget */,
+				E8BB7651FCE63658D930BF53 /* Products */,
 			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 		E8BB7651FCE63658D930BF53 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CC968E8826C10AF65CC867FB /* BabyDiaryWidget.appex */,
 				F6FC8B726318803206C23447 /* TrunkyDiary.app */,
+				C89E4228EB8E7335C0654F3A /* TrunkyDiaryWidget.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		F318AF93A6ECECC7F0155A9F /* BabyDiaryWidget */ = {
-			isa = PBXGroup;
-			children = (
-				9D3A81D34A1EE0976B5E66A3 /* Assets.xcassets */,
-				4B5AA97B5F8FDEC8987E89FB /* BabyDiaryWidget.entitlements */,
-				1E74C7D4A3CC7EBAEDAA758A /* BabyDiaryWidget.swift */,
-				3FF5140579482CE6AAB27B08 /* WidgetCoreDataStack.swift */,
-				1367B9A416CE03F89B9E8FF6 /* WidgetDesignSystem.swift */,
-			);
-			path = BabyDiaryWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		19B96BE323F0B4A8AE7B4162 /* BabyDiaryWidget */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 343FCCBD872756662AEB1660 /* Build configuration list for PBXNativeTarget "BabyDiaryWidget" */;
-			buildPhases = (
-				9944BB8C50C0538A80C9852B /* Sources */,
-				C4BD22E102FE514BCA48E8C1 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = BabyDiaryWidget;
-			packageProductDependencies = (
-			);
-			productName = BabyDiaryWidget;
-			productReference = CC968E8826C10AF65CC867FB /* BabyDiaryWidget.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		CF3AD219B7CEE628C5287467 /* TrunkyDiary */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 420242B1D6F7853BECF6933B /* Build configuration list for PBXNativeTarget "TrunkyDiary" */;
@@ -258,7 +101,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				164A2CE41B38454D033B3273 /* PBXTargetDependency */,
+				199C0739E7D4BFFCBD1C00CD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				8E5CE04B2F8205B400EE09F4 /* TrunkyDiary */,
 			);
 			name = TrunkyDiary;
 			packageProductDependencies = (
@@ -266,6 +112,27 @@
 			productName = TrunkyDiary;
 			productReference = F6FC8B726318803206C23447 /* TrunkyDiary.app */;
 			productType = "com.apple.product-type.application";
+		};
+		F4B67656404C11695454FCB1 /* TrunkyDiaryWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 82BB7309F2D2AC43F4CD640E /* Build configuration list for PBXNativeTarget "TrunkyDiaryWidget" */;
+			buildPhases = (
+				0465456D4A59AEE098E9E5E6 /* Sources */,
+				AFA2E409B0A6DA430D46861B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8E5CDFDE2F82057800EE09F4 /* TrunkyDiaryWidget */,
+			);
+			name = TrunkyDiaryWidget;
+			packageProductDependencies = (
+			);
+			productName = TrunkyDiaryWidget;
+			productReference = C89E4228EB8E7335C0654F3A /* TrunkyDiaryWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -276,22 +143,22 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
-					19B96BE323F0B4A8AE7B4162 = {
+					CF3AD219B7CEE628C5287467 = {
 						DevelopmentTeam = 74W3FA8FLB;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
-							"com.apple.BackgroundModes" = {
+							com.apple.BackgroundModes = {
 								enabled = 1;
 							};
-							"com.apple.Push" = {
+							com.apple.Push = {
 								enabled = 1;
 							};
-							"com.apple.iCloud" = {
+							com.apple.iCloud = {
 								enabled = 1;
 							};
 						};
 					};
-					CF3AD219B7CEE628C5287467 = {
+					F4B67656404C11695454FCB1 = {
 						DevelopmentTeam = 74W3FA8FLB;
 						ProvisioningStyle = Automatic;
 					};
@@ -303,7 +170,6 @@
 			knownRegions = (
 				Base,
 				en,
-				ko,
 			);
 			mainGroup = 3830120837C3FE84CA24E386;
 			minimizedProjectReferenceProxies = 1;
@@ -312,8 +178,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				19B96BE323F0B4A8AE7B4162 /* BabyDiaryWidget */,
 				CF3AD219B7CEE628C5287467 /* TrunkyDiary */,
+				F4B67656404C11695454FCB1 /* TrunkyDiaryWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -323,34 +189,23 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				89109C7667D7D820442C622B /* Assets.xcassets in Resources */,
-				1E1A427182CB66B8537CC19F /* Localizable.strings in Resources */,
-				E649017001440A291D47E80F /* Ownglyph_PDH.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C4BD22E102FE514BCA48E8C1 /* Resources */ = {
+		AFA2E409B0A6DA430D46861B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35340DDE060C55B65423D90F /* Assets.xcassets in Resources */,
-				3E4A9202CFF62238B0B535B8 /* Ownglyph_PDH.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		9944BB8C50C0538A80C9852B /* Sources */ = {
+		0465456D4A59AEE098E9E5E6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE9583D822B3658C4E95A56E /* BabyDiary.xcdatamodeld in Sources */,
-				2811D1C71AE72A6E97BAFDBB /* BabyDiaryWidget.swift in Sources */,
-				57284A98574807FAB7E7612E /* CDBaby+CoreDataClass.swift in Sources */,
-				ADE33A31EE3D8C0A3E3175C0 /* CDDiaryEntry+CoreDataClass.swift in Sources */,
-				BF0733D159F9AAFC56F8CC62 /* WidgetCoreDataStack.swift in Sources */,
-				383ED6C73B38C8E28F13D5EC /* WidgetDesignSystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,43 +213,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D070534E31AAFEF6F9967B1 /* AllEntriesViewController.swift in Sources */,
-				F5F2579AE0878C7FF2B97892 /* AppDelegate.swift in Sources */,
-				7413858471DD380A7DB7038A /* BabyDiary.xcdatamodeld in Sources */,
-				9B3197512BBEE9E0077203A4 /* BabySetupViewController.swift in Sources */,
-				DA3E52D1A40BB39ED742E03A /* CDBaby+CoreDataClass.swift in Sources */,
-				9B55F956D4C11BCCD0426D98 /* CDDiaryEntry+CoreDataClass.swift in Sources */,
-				F07B28F84BCE6CB4EC2A730C /* CoreDataStack.swift in Sources */,
-				F254BE47B0F569C7B4BE2E44 /* CoverCropViewController.swift in Sources */,
-				7A5A904415AE58F58CF580B0 /* CustomAlertView.swift in Sources */,
-				375E8C82EEDDFDB7153985D8 /* CustomPhotoPickerViewController.swift in Sources */,
-				A363C27630FE2920CD5AF4E1 /* DatePickerSheetViewController.swift in Sources */,
-				5737A0E3C0A3251B62BC76AF /* DesignSystem.swift in Sources */,
-				600C6FEAA7C7A35925BFF412 /* DiaryDetailViewController.swift in Sources */,
-				12D3B34B504CCE2E45AC272B /* DiaryEditorViewController.swift in Sources */,
-				3F94C5429D0330460E6493F9 /* FullScreenImageViewController.swift in Sources */,
-				87BB312ECD1C329A3E35EC59 /* HomeViewController.swift in Sources */,
-				560677E4445790A07FF0BFC9 /* MainTabBarController.swift in Sources */,
-				8DEE9B0059B84856BC707185 /* MinibookViewController.swift in Sources */,
-				5394C8F5841861FC38EDC4AE /* MonthFeedViewController.swift in Sources */,
-				7D79B0F6ECF3F62911793A8F /* PlaybackPopupView.swift in Sources */,
-				FC8F0467FAEDABE02CEC880C /* PushTransitionManager.swift in Sources */,
-				91D3C06C55F974DC7F9393FA /* SceneDelegate.swift in Sources */,
-				92F15DE16641F1B7CAF2B6F3 /* SettingsMenuViewController.swift in Sources */,
-				1FA7C12A18901EE1159B183C /* SettingsViewController.swift in Sources */,
-				292D8141FE393A6173BC5621 /* SpeechManager.swift in Sources */,
-				8CE4787596AAEFB1260B35E3 /* SplashViewController.swift in Sources */,
-				569282306824291493EAA2A8 /* TodayViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		164A2CE41B38454D033B3273 /* PBXTargetDependency */ = {
+		199C0739E7D4BFFCBD1C00CD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 19B96BE323F0B4A8AE7B4162 /* BabyDiaryWidget */;
-			targetProxy = 6433C64D620D8B298E3FBF2A /* PBXContainerItemProxy */;
+			target = F4B67656404C11695454FCB1 /* TrunkyDiaryWidget */;
+			targetProxy = BD227537E148A68C2F4B1BD6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -454,6 +282,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TrunkyDiary/Info.plist;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -516,6 +345,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TrunkyDiary/Info.plist;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -528,15 +358,40 @@
 			};
 			name = Release;
 		};
-		A646A02C9FDCF5480863F9A7 /* Debug */ = {
+		57D840C14BBBC0A9A18AE0ED /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = BabyDiaryWidget/BabyDiaryWidget.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TrunkyDiaryWidget/TrunkyDiaryWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 74W3FA8FLB;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = BabyDiaryWidget/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				INFOPLIST_FILE = TrunkyDiaryWidget/Info.plist;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.analoglab.TrunkyDiary.widget;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8B6A457E201AC1C00C074785 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TrunkyDiaryWidget/TrunkyDiaryWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 74W3FA8FLB;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TrunkyDiaryWidget/Info.plist;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = io.analoglab.TrunkyDiary.widget;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -550,6 +405,7 @@
 				CODE_SIGN_ENTITLEMENTS = TrunkyDiary/TrunkyDiary.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = TrunkyDiary/Info.plist;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -559,21 +415,6 @@
 			};
 			name = Debug;
 		};
-		BA9B33B6B0644DC07CB75C10 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = BabyDiaryWidget/BabyDiaryWidget.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 74W3FA8FLB;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = BabyDiaryWidget/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = io.analoglab.TrunkyDiary.widget;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		E6F46F2036B36E2B444F986E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -581,6 +422,7 @@
 				CODE_SIGN_ENTITLEMENTS = TrunkyDiary/TrunkyDiary.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = TrunkyDiary/Info.plist;
+				EXCLUDED_SOURCE_FILE_NAMES = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -593,15 +435,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		343FCCBD872756662AEB1660 /* Build configuration list for PBXNativeTarget "BabyDiaryWidget" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A646A02C9FDCF5480863F9A7 /* Debug */,
-				BA9B33B6B0644DC07CB75C10 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
 		3DEDCC6E0D7803AF819A84AC /* Build configuration list for PBXProject "TrunkyDiary" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -620,20 +453,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-/* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		89217BA2793C9F14E2B76BBD /* BabyDiary.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				4FEB09ECD697D65F8378F3E4 /* BabyDiary.xcdatamodel */,
+		82BB7309F2D2AC43F4CD640E /* Build configuration list for PBXNativeTarget "TrunkyDiaryWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B6A457E201AC1C00C074785 /* Debug */,
+				57D840C14BBBC0A9A18AE0ED /* Release */,
 			);
-			currentVersion = 4FEB09ECD697D65F8378F3E4 /* BabyDiary.xcdatamodel */;
-			path = BabyDiary.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
 		};
-/* End XCVersionGroup section */
+/* End XCConfigurationList section */
 	};
 	rootObject = F480E7DB76478A6382EDE592 /* Project object */;
 }
