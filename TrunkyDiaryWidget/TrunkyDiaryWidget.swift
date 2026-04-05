@@ -30,14 +30,19 @@ struct TrunkyDiaryProvider: TimelineProvider {
         completion(Timeline(entries: [entry], policy: .after(nextMidnight)))
     }
 
+    private let appGroupID = "group.io.analoglab.TrunkyDiary"
+
     private func makeEntry(displaySize: CGSize) -> TrunkyDiaryEntry {
         let stack = WidgetCoreDataStack.shared
         let baby = stack.fetchBaby()
-        let latestPhoto = stack.fetchLatestEntryWithPhoto()
 
+        // App Group에서 위젯용 사진 로드
         var image: UIImage? = nil
-        if let data = latestPhoto?.photoData, let original = UIImage(data: data) {
-            image = resizedToFill(original, targetSize: displaySize)
+        if let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) {
+            let photoURL = groupURL.appendingPathComponent("widget_photo.jpg")
+            if let original = UIImage(contentsOfFile: photoURL.path) {
+                image = resizedToFill(original, targetSize: displaySize)
+            }
         }
 
         return TrunkyDiaryEntry(

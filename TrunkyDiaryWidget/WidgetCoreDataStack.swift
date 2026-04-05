@@ -10,7 +10,6 @@ final class WidgetCoreDataStack {
         )!
         let storeURL = appGroupURL.appendingPathComponent("BabyDiary.sqlite")
         let desc = NSPersistentStoreDescription(url: storeURL)
-        desc.isReadOnly = true
         desc.cloudKitContainerOptions = nil
         container.persistentStoreDescriptions = [desc]
         container.loadPersistentStores { _, error in

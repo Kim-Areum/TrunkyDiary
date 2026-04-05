@@ -90,9 +90,30 @@ final class CoreDataStack {
         guard context.hasChanges else { return }
         do {
             try context.save()
+            updateWidgetPhoto()
             WidgetCenter.shared.reloadAllTimelines()
         } catch {
             print("Core Data 저장 실패: \(error)")
+        }
+    }
+
+    /// 최신 사진을 App Group에 위젯용으로 저장
+    private func updateWidgetPhoto() {
+        guard let groupURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: Self.appGroupID
+        ) else { return }
+
+        let photoURL = groupURL.appendingPathComponent("widget_photo.jpg")
+
+        // 최신 사진이 있는 일기 찾기
+        let req: NSFetchRequest<CDDiaryEntry> = CDDiaryEntry.fetchRequest()
+        req.predicate = NSPredicate(format: "photoData != nil")
+        req.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        req.fetchLimit = 1
+
+        if let entry = try? viewContext.fetch(req).first,
+           let data = entry.photoData {
+            try? data.write(to: photoURL)
         }
     }
 
