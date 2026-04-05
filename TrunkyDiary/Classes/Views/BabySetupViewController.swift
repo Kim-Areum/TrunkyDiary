@@ -122,7 +122,7 @@ class BabySetupViewController: UIViewController {
 
         let plusLabel = UILabel()
         plusLabel.text = "+"
-        plusLabel.font = .systemFont(ofSize: 36)
+        plusLabel.font = DS.font(36)
         plusLabel.textColor = DS.fgPale
         plusLabel.translatesAutoresizingMaskIntoConstraints = false
         photoPlaceholder.addSubview(plusLabel)
@@ -214,12 +214,11 @@ class BabySetupViewController: UIViewController {
         birthLabel.textColor = DS.fgMuted
         birthStack.addArrangedSubview(birthLabel)
 
-        birthButton.titleLabel?.font = DS.font(14)
-        birthButton.setTitleColor(DS.fgStrong, for: .normal)
-        birthButton.contentHorizontalAlignment = .left
-        var birthBtnConfig = birthButton.configuration ?? UIButton.Configuration.plain()
+        var birthBtnConfig = UIButton.Configuration.plain()
         birthBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 14, bottom: 14, trailing: 14)
+        birthBtnConfig.baseForegroundColor = DS.fgStrong
         birthButton.configuration = birthBtnConfig
+        birthButton.contentHorizontalAlignment = .left
         birthButton.backgroundColor = DS.bgBase
         birthButton.layer.cornerRadius = 12
         birthButton.layer.borderWidth = 1
@@ -235,8 +234,11 @@ class BabySetupViewController: UIViewController {
     // MARK: - Start Button
 
     private func setupStartButton() {
-        startButton.setTitle("시작하기", for: .normal)
-        startButton.titleLabel?.font = DS.font(15)
+        var startConfig = UIButton.Configuration.plain()
+        var startTitle = AttributedString("시작하기")
+        startTitle.font = DS.font(15)
+        startConfig.attributedTitle = startTitle
+        startButton.configuration = startConfig
         startButton.layer.cornerRadius = 22
         startButton.clipsToBounds = true
         startButton.addTarget(self, action: #selector(startTapped), for: .touchUpInside)
@@ -305,14 +307,16 @@ class BabySetupViewController: UIViewController {
         let enabled = !trimmedName.isEmpty
         startButton.isEnabled = enabled
         startButton.backgroundColor = enabled ? DS.accent : DS.bgNeutral
-        startButton.setTitleColor(enabled ? DS.fgStrong : DS.fgPale, for: .normal)
+        startButton.configuration?.baseForegroundColor = enabled ? DS.fgStrong : DS.fgPale
     }
 
     private func updateBirthDateLabel() {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
         formatter.dateStyle = .long
-        birthButton.setTitle(formatter.string(from: birthDate), for: .normal)
+        var attrTitle = AttributedString(formatter.string(from: birthDate))
+        attrTitle.font = DS.font(14)
+        birthButton.configuration?.attributedTitle = attrTitle
     }
 
     private func updatePhotoUI() {

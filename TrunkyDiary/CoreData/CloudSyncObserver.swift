@@ -57,6 +57,8 @@ final class CloudSyncObserver {
                         self.initialSyncDone = true
                     }
                     NotificationCenter.default.post(name: .cloudSyncCompleted, object: nil)
+                } else {
+                    CloudSyncBanner.showError("iCloud 동기화에 실패했어요")
                 }
             }
         }

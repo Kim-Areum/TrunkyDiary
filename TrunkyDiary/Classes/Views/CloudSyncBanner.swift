@@ -23,6 +23,25 @@ final class CloudSyncBanner: UIView {
         current?.dismissAnimated()
     }
 
+    static func showError(_ message: String) {
+        dismiss()
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first?.windows.first(where: { $0.isKeyWindow })
+        else { return }
+
+        let banner = CloudSyncBanner(errorMessage: message)
+        current = banner
+        banner.present(in: window)
+
+        // 3초 후 자동 dismiss
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            if current === banner {
+                banner.dismissAnimated()
+            }
+        }
+    }
+
     // MARK: - Views
 
     private let spinner = UIActivityIndicatorView(style: .medium)
@@ -30,11 +49,35 @@ final class CloudSyncBanner: UIView {
     private let stitchLayer = CAShapeLayer()
     private let cornerRadius: CGFloat = 12
 
+    private var isError = false
+
     // MARK: - Init
 
     private init() {
         super.init(frame: .zero)
         setup()
+    }
+
+    private convenience init(errorMessage: String) {
+        self.init()
+        isError = true
+        spinner.stopAnimating()
+        spinner.isHidden = true
+
+        let errorIcon = UIImageView(image: UIImage(systemName: "exclamationmark.icloud")?.withConfiguration(
+            UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+        ))
+        errorIcon.tintColor = UIColor(hex: "D05050")
+        errorIcon.translatesAutoresizingMaskIntoConstraints = false
+        insertSubview(errorIcon, belowSubview: messageLabel)
+
+        NSLayoutConstraint.activate([
+            errorIcon.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            errorIcon.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
+
+        messageLabel.text = errorMessage
+        messageLabel.textColor = UIColor(hex: "D05050")
     }
 
     required init?(coder: NSCoder) { fatalError() }

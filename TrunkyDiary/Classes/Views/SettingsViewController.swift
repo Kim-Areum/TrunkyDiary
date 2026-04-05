@@ -152,7 +152,7 @@ class SettingsViewController: UIViewController {
 
         let cameraEmoji = UILabel()
         cameraEmoji.text = "\u{1F4F7}"
-        cameraEmoji.font = .systemFont(ofSize: 24)
+        cameraEmoji.font = DS.font(24)
         cameraEmoji.translatesAutoresizingMaskIntoConstraints = false
         profilePlaceholder.addSubview(cameraEmoji)
 
