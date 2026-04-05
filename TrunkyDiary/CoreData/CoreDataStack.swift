@@ -38,9 +38,8 @@ final class CoreDataStack {
                 print("Core Data 로드 실패: \(error)")
                 // CloudKit 실패 시 iCloud 끄고 로컬로 재시도
                 if description.cloudKitContainerOptions != nil {
-                    print("iCloud 동기화 비활성화 후 재시도")
+                    print("iCloud 동기화 비활성화 후 로컬로 재시도")
                     description.cloudKitContainerOptions = nil
-                    UserDefaults.standard.set(true, forKey: "iCloudSyncDisabled")
                     container.persistentStoreDescriptions = [description]
                     container.loadPersistentStores { _, retryError in
                         if let retryError = retryError {
