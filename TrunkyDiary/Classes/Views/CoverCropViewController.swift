@@ -27,9 +27,14 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         setupHint()
     }
 
+    private var didConfigureCrop = false
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        configureCropZoom()
+        if !didConfigureCrop {
+            didConfigureCrop = true
+            configureCropZoom()
+        }
     }
 
     // MARK: - Nav Bar
@@ -187,20 +192,36 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
 
     @objc private func saveTapped() {
         let cropSize = cropScrollView.bounds.size
-        _ = UIScreen.main.scale
+        let zoomScale = cropScrollView.zoomScale
+        let offset = cropScrollView.contentOffset
 
-        let renderer = UIGraphicsImageRenderer(size: cropSize)
-        let cropped = renderer.image { _ in
-            _ = cropScrollView.zoomScale
-            let offset = cropScrollView.contentOffset
+        // 원본 이미지 기준으로 크롭 영역 계산
+        let imgSize = image.size
+        let imgAspect = imgSize.width / imgSize.height
+        let cropAspect = cropSize.width / cropSize.height
 
-            let drawSize = CGSize(
-                width: imageView.frame.width,
-                height: imageView.frame.height
-            )
-            let drawOrigin = CGPoint(x: -offset.x, y: -offset.y)
-            image.draw(in: CGRect(origin: drawOrigin, size: drawSize))
+        // imageView의 기본 크기 (zoomScale 1.0일 때)
+        let baseSize: CGSize
+        if imgAspect > cropAspect {
+            baseSize = CGSize(width: cropSize.height * imgAspect, height: cropSize.height)
+        } else {
+            baseSize = CGSize(width: cropSize.width, height: cropSize.width / imgAspect)
         }
+
+        // 원본 이미지 대비 스케일
+        let scaleX = imgSize.width / (baseSize.width * zoomScale)
+        let scaleY = imgSize.height / (baseSize.height * zoomScale)
+
+        let cropRect = CGRect(
+            x: offset.x * scaleX,
+            y: offset.y * scaleY,
+            width: cropSize.width * scaleX,
+            height: cropSize.height * scaleY
+        )
+
+        // 원본에서 크롭
+        guard let cgCropped = image.cgImage?.cropping(to: cropRect) else { return }
+        let cropped = UIImage(cgImage: cgCropped)
 
         onSave?(cropped)
         // 가장 아래 presenter에서 한번에 dismiss
