@@ -44,14 +44,15 @@ class DatePickerSheetViewController: UIViewController, UIPickerViewDelegate, UIP
         navBar.leftButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
 
         let doneButton = UIButton(type: .system)
-        doneButton.setTitle("완료", for: .normal)
-        doneButton.titleLabel?.font = DS.font(15)
-        doneButton.setTitleColor(DS.fgStrong, for: .normal)
-        doneButton.backgroundColor = DS.accent
-        doneButton.layer.cornerRadius = 15
-        var doneBtnConfig = doneButton.configuration ?? UIButton.Configuration.plain()
+        var doneBtnConfig = UIButton.Configuration.plain()
+        var doneTitle = AttributedString("완료")
+        doneTitle.font = DS.font(15)
+        doneBtnConfig.attributedTitle = doneTitle
+        doneBtnConfig.baseForegroundColor = DS.fgStrong
         doneBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 14, bottom: 6, trailing: 14)
         doneButton.configuration = doneBtnConfig
+        doneButton.backgroundColor = DS.accent
+        doneButton.layer.cornerRadius = 15
         doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         doneButton.translatesAutoresizingMaskIntoConstraints = false
         navBar.addSubview(doneButton)

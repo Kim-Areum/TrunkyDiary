@@ -53,14 +53,15 @@ class CoverCropViewController: UIViewController, UIScrollViewDelegate {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let saveButton = UIButton(type: .system)
-        saveButton.setTitle("완료", for: .normal)
-        saveButton.titleLabel?.font = DS.font(15)
-        saveButton.setTitleColor(DS.fgStrong, for: .normal)
-        saveButton.backgroundColor = DS.accent
-        saveButton.layer.cornerRadius = 15
-        var saveBtnConfig = saveButton.configuration ?? UIButton.Configuration.plain()
+        var saveBtnConfig = UIButton.Configuration.plain()
+        var saveTitle = AttributedString("완료")
+        saveTitle.font = DS.font(15)
+        saveBtnConfig.attributedTitle = saveTitle
+        saveBtnConfig.baseForegroundColor = DS.fgStrong
         saveBtnConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 14, bottom: 6, trailing: 14)
         saveButton.configuration = saveBtnConfig
+        saveButton.backgroundColor = DS.accent
+        saveButton.layer.cornerRadius = 15
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
         saveButton.translatesAutoresizingMaskIntoConstraints = false
 
