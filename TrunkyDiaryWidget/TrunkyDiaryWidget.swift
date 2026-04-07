@@ -33,8 +33,12 @@ struct TrunkyDiaryProvider: TimelineProvider {
     private let appGroupID = "group.io.analoglab.TrunkyDiary"
 
     private func makeEntry(displaySize: CGSize) -> TrunkyDiaryEntry {
-        let stack = WidgetCoreDataStack.shared
-        let baby = stack.fetchBaby()
+        let defaults = UserDefaults(suiteName: appGroupID)
+
+        // App Group UserDefaults에서 아기 정보 로드
+        let babyName = defaults?.string(forKey: "widget_babyName") ?? ""
+        let dayCount = defaults?.integer(forKey: "widget_dayCount") ?? 1
+        let monthAndDays = defaults?.string(forKey: "widget_monthAndDays") ?? ""
 
         // App Group에서 위젯용 사진 로드
         var image: UIImage? = nil
@@ -47,9 +51,9 @@ struct TrunkyDiaryProvider: TimelineProvider {
 
         return TrunkyDiaryEntry(
             date: .now,
-            babyName: baby?.name ?? "",
-            dayCount: baby?.dayCount ?? 1,
-            monthAndDays: baby?.monthAndDays ?? "",
+            babyName: babyName,
+            dayCount: dayCount,
+            monthAndDays: monthAndDays,
             image: image
         )
     }

@@ -202,6 +202,12 @@ extension MonthFeedViewController: UITableViewDelegate {
         40
     }
 
+    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let feedCell = cell as? FeedEntryCell {
+            feedCell.cleanupVideo()
+        }
+    }
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let entry = groupedEntries[indexPath.section].entries[indexPath.row]
@@ -257,6 +263,8 @@ private class FeedEntryCell: UITableViewCell {
     private let bodyTextLabel = UILabel()
     private let audioButton = UIButton(type: .system)
     private let videoPlayIcon = UIImageView()
+    private var videoPlayerView: PlayerView?
+    private let videoMuteButton = UIButton(type: .system)
     var onAudioTapped: ((CDDiaryEntry) -> Void)?
     private var currentEntry: CDDiaryEntry?
 
@@ -395,6 +403,24 @@ private class FeedEntryCell: UITableViewCell {
             videoPlayIcon.centerXAnchor.constraint(equalTo: photoImageView.centerXAnchor),
             videoPlayIcon.centerYAnchor.constraint(equalTo: photoImageView.centerYAnchor),
         ])
+
+        // Video mute button overlay
+        let muteConfig = UIImage.SymbolConfiguration(pointSize: 9)
+        videoMuteButton.setImage(UIImage(systemName: "speaker.slash.fill", withConfiguration: muteConfig), for: .normal)
+        videoMuteButton.tintColor = .white
+        videoMuteButton.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        videoMuteButton.layer.cornerRadius = 9
+        videoMuteButton.isHidden = true
+        videoMuteButton.translatesAutoresizingMaskIntoConstraints = false
+        videoMuteButton.addTarget(self, action: #selector(toggleFeedVideoMute), for: .touchUpInside)
+        innerClip.addSubview(videoMuteButton)
+
+        NSLayoutConstraint.activate([
+            videoMuteButton.trailingAnchor.constraint(equalTo: photoImageView.trailingAnchor, constant: -8),
+            videoMuteButton.bottomAnchor.constraint(equalTo: photoImageView.bottomAnchor, constant: -8),
+            videoMuteButton.widthAnchor.constraint(equalToConstant: 18),
+            videoMuteButton.heightAnchor.constraint(equalToConstant: 18),
+        ])
     }
 
     func configure(entry: CDDiaryEntry, baby: CDBaby?) {
@@ -418,8 +444,32 @@ private class FeedEntryCell: UITableViewCell {
             bodyTopToCard?.isActive = true
         }
 
-        // Video play icon
-        videoPlayIcon.isHidden = !entry.hasVideo
+        // Video playback
+        if let videoData = entry.videoData {
+            if videoPlayerView == nil {
+                let pv = PlayerView()
+                pv.translatesAutoresizingMaskIntoConstraints = false
+                pv.clipsToBounds = true
+                innerClip.addSubview(pv)
+                NSLayoutConstraint.activate([
+                    pv.topAnchor.constraint(equalTo: photoImageView.topAnchor),
+                    pv.leadingAnchor.constraint(equalTo: photoImageView.leadingAnchor),
+                    pv.trailingAnchor.constraint(equalTo: photoImageView.trailingAnchor),
+                    pv.bottomAnchor.constraint(equalTo: photoImageView.bottomAnchor),
+                ])
+                videoPlayerView = pv
+            }
+            videoPlayerView?.isHidden = false
+            videoPlayerView?.play(data: videoData)
+            videoMuteButton.isHidden = false
+            innerClip.bringSubviewToFront(videoMuteButton)
+            videoPlayIcon.isHidden = true
+        } else {
+            videoPlayerView?.cleanup()
+            videoPlayerView?.isHidden = true
+            videoMuteButton.isHidden = true
+            videoPlayIcon.isHidden = !entry.hasVideo
+        }
 
         dateBadge.update(text: entry.formattedDate)
 
@@ -445,11 +495,30 @@ private class FeedEntryCell: UITableViewCell {
         onAudioTapped?(entry)
     }
 
+    func cleanupVideo() {
+        videoPlayerView?.cleanup()
+        videoPlayerView?.isHidden = true
+        videoMuteButton.isHidden = true
+    }
+
+    @objc private func toggleFeedVideoMute() {
+        guard let pv = videoPlayerView else { return }
+        pv.isMuted.toggle()
+        let iconName = pv.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+        let icon = UIImage(systemName: iconName)?.withConfiguration(
+            UIImage.SymbolConfiguration(pointSize: 9)
+        )
+        videoMuteButton.setImage(icon, for: .normal)
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
         photoImageView.image = nil
         photoImageView.isHidden = true
         videoPlayIcon.isHidden = true
+        videoPlayerView?.cleanup()
+        videoPlayerView?.isHidden = true
+        videoMuteButton.isHidden = true
         bodyTextLabel.text = nil
         audioButton.isHidden = true
         currentEntry = nil

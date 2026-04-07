@@ -53,6 +53,8 @@ class TodayViewController: UIViewController {
 
     // Video play icon overlay
     private let videoPlayIcon = UIImageView()
+    private var playerView: PlayerView?
+    private let videoMuteButton = UIButton(type: .system)
 
     // Voice record button
     private let voiceButton = UIButton(type: .custom)
@@ -92,6 +94,7 @@ class TodayViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopElephantAnimation()
+        playerView?.cleanup()
     }
 
     // MARK: - Layout
@@ -575,8 +578,48 @@ class TodayViewController: UIViewController {
             photoPlaceholder.isHidden = false
         }
 
-        // Video play icon
-        videoPlayIcon.isHidden = !(entry?.hasVideo ?? false)
+        // Video autoplay
+        if let videoData = entry?.videoData {
+            if playerView == nil, let container = photoImageView.superview {
+                let pv = PlayerView()
+                pv.translatesAutoresizingMaskIntoConstraints = false
+                container.insertSubview(pv, aboveSubview: photoImageView)
+                NSLayoutConstraint.activate([
+                    pv.topAnchor.constraint(equalTo: photoImageView.topAnchor),
+                    pv.leadingAnchor.constraint(equalTo: photoImageView.leadingAnchor),
+                    pv.trailingAnchor.constraint(equalTo: photoImageView.trailingAnchor),
+                    pv.bottomAnchor.constraint(equalTo: photoImageView.bottomAnchor),
+                ])
+                playerView = pv
+
+                // 음소거 버튼 (20% 축소, 우하단)
+                let muteIcon = UIImage(systemName: "speaker.slash.fill")?.withConfiguration(
+                    UIImage.SymbolConfiguration(pointSize: 9)
+                )
+                videoMuteButton.setImage(muteIcon, for: .normal)
+                videoMuteButton.tintColor = .white
+                videoMuteButton.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+                videoMuteButton.layer.cornerRadius = 9
+                videoMuteButton.translatesAutoresizingMaskIntoConstraints = false
+                videoMuteButton.addTarget(self, action: #selector(toggleTodayVideoMute), for: .touchUpInside)
+                container.addSubview(videoMuteButton)
+                NSLayoutConstraint.activate([
+                    videoMuteButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
+                    videoMuteButton.bottomAnchor.constraint(equalTo: photoImageView.bottomAnchor, constant: -8),
+                    videoMuteButton.widthAnchor.constraint(equalToConstant: 18),
+                    videoMuteButton.heightAnchor.constraint(equalToConstant: 18),
+                ])
+            }
+            playerView?.isHidden = false
+            playerView?.play(data: videoData)
+            videoPlayIcon.isHidden = true
+            videoMuteButton.isHidden = false
+        } else {
+            playerView?.cleanup()
+            playerView?.isHidden = true
+            videoPlayIcon.isHidden = true
+            videoMuteButton.isHidden = true
+        }
 
         // Diary text
         if let entry = entry, !entry.text.isEmpty {
@@ -639,6 +682,16 @@ class TodayViewController: UIViewController {
 
     @objc private func cardTapped() {
         presentEditor()
+    }
+
+    @objc private func toggleTodayVideoMute() {
+        guard let pv = playerView else { return }
+        pv.isMuted.toggle()
+        let iconName = pv.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+        let icon = UIImage(systemName: iconName)?.withConfiguration(
+            UIImage.SymbolConfiguration(pointSize: 9)
+        )
+        videoMuteButton.setImage(icon, for: .normal)
     }
 
     @objc private func moreTapped() {

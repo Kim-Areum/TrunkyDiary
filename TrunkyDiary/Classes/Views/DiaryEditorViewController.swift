@@ -45,6 +45,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
     private var videoPlayerView: PlayerView?
     private let videoMuteButton = UIButton(type: .system)
     private let videoPlayIcon = UIImageView()
+    private let overlayStack = UIStackView()
 
     // Card body
     private let cardBodyView = UIView()
@@ -311,7 +312,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         ])
 
         // Delete and picker buttons overlay (when photo exists)
-        let overlayStack = UIStackView()
         overlayStack.axis = .horizontal
         overlayStack.spacing = 10
         overlayStack.translatesAutoresizingMaskIntoConstraints = false
@@ -539,7 +539,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
                 videoMuteButton.addTarget(self, action: #selector(toggleVideoMute), for: .touchUpInside)
                 photoContainer.addSubview(videoMuteButton)
                 NSLayoutConstraint.activate([
-                    videoMuteButton.trailingAnchor.constraint(equalTo: photoContainer.trailingAnchor, constant: -8),
+                    videoMuteButton.leadingAnchor.constraint(equalTo: photoContainer.leadingAnchor, constant: 8),
                     videoMuteButton.bottomAnchor.constraint(equalTo: photoContainer.bottomAnchor, constant: -8),
                     videoMuteButton.widthAnchor.constraint(equalToConstant: 22),
                     videoMuteButton.heightAnchor.constraint(equalToConstant: 22),
@@ -548,6 +548,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
             videoPlayerView?.isHidden = false
             videoMuteButton.isHidden = false
             videoPlayerView?.play(data: videoData!)
+            photoContainer.bringSubviewToFront(overlayStack)
             photoContainer.bringSubviewToFront(videoMuteButton)
         } else {
             videoPlayerView?.cleanup()

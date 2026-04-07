@@ -62,6 +62,9 @@ class MinibookViewController: UIViewController {
     private let firstPageNoPhotoChars = 450
     private let continuationChars = 500
 
+    private var activePlayerView: PlayerView?
+    private var activeVideoMuteButton: UIButton?
+
     // UI
     private let pageContainerView = UIView()
     private let pageLabel = UILabel()
@@ -475,7 +478,25 @@ class MinibookViewController: UIViewController {
 
     // MARK: - Render Page
 
+    private func cleanupActivePlayer() {
+        activePlayerView?.cleanup()
+        activePlayerView?.removeFromSuperview()
+        activePlayerView = nil
+        activeVideoMuteButton = nil
+    }
+
+    @objc private func toggleMinibookVideoMute() {
+        guard let pv = activePlayerView else { return }
+        pv.isMuted.toggle()
+        let iconName = pv.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+        let icon = UIImage(systemName: iconName)?.withConfiguration(
+            UIImage.SymbolConfiguration(pointSize: 9)
+        )
+        activeVideoMuteButton?.setImage(icon, for: .normal)
+    }
+
     private func renderCurrentPage() {
+        cleanupActivePlayer()
         pageContainerView.subviews.forEach { $0.removeFromSuperview() }
         guard currentPage < pages.count else { return }
 
@@ -765,6 +786,41 @@ class MinibookViewController: UIViewController {
             ])
             topAnchor = imageView.bottomAnchor
             topConstant = 14
+
+            // Video autoplay (preview only, not PDF)
+            if !isExporting, let videoData = entry.videoData {
+                let pv = PlayerView()
+                pv.translatesAutoresizingMaskIntoConstraints = false
+                pv.layer.cornerRadius = 4
+                pv.clipsToBounds = true
+                pageView.addSubview(pv)
+                NSLayoutConstraint.activate([
+                    pv.topAnchor.constraint(equalTo: imageView.topAnchor),
+                    pv.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
+                    pv.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
+                    pv.bottomAnchor.constraint(equalTo: imageView.bottomAnchor),
+                ])
+                pv.play(data: videoData)
+                activePlayerView = pv
+
+                // Mute button overlay
+                let muteBtn = UIButton(type: .system)
+                let muteConfig = UIImage.SymbolConfiguration(pointSize: 9)
+                muteBtn.setImage(UIImage(systemName: "speaker.slash.fill", withConfiguration: muteConfig), for: .normal)
+                muteBtn.tintColor = .white
+                muteBtn.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+                muteBtn.layer.cornerRadius = 9
+                muteBtn.translatesAutoresizingMaskIntoConstraints = false
+                muteBtn.addTarget(self, action: #selector(toggleMinibookVideoMute), for: .touchUpInside)
+                pageView.addSubview(muteBtn)
+                NSLayoutConstraint.activate([
+                    muteBtn.trailingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: -8),
+                    muteBtn.bottomAnchor.constraint(equalTo: imageView.bottomAnchor, constant: -8),
+                    muteBtn.widthAnchor.constraint(equalToConstant: 18),
+                    muteBtn.heightAnchor.constraint(equalToConstant: 18),
+                ])
+                activeVideoMuteButton = muteBtn
+            }
         }
 
         // Date + D+ row

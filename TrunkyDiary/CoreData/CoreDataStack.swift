@@ -91,15 +91,17 @@ final class CoreDataStack {
         do {
             try context.save()
             updateWidgetPhoto()
+            updateWidgetBabyInfo()
             WidgetCenter.shared.reloadAllTimelines()
         } catch {
             print("Core Data 저장 실패: \(error)")
         }
     }
 
-    /// 최신 사진을 App Group에 위젯용으로 저장
+    /// 위젯용 데이터 내보내기 (사진 + 아기 정보)
     func exportWidgetPhoto() {
         updateWidgetPhoto()
+        updateWidgetBabyInfo()
         WidgetCenter.shared.reloadAllTimelines()
     }
 
@@ -120,6 +122,14 @@ final class CoreDataStack {
             let data = entry.photoData ?? entry.videoThumbnailData
             try? data?.write(to: photoURL)
         }
+    }
+
+    private func updateWidgetBabyInfo() {
+        guard let defaults = UserDefaults(suiteName: Self.appGroupID),
+              let baby = fetchBaby() else { return }
+        defaults.set(baby.name, forKey: "widget_babyName")
+        defaults.set(baby.dayCount, forKey: "widget_dayCount")
+        defaults.set(baby.monthAndDays, forKey: "widget_monthAndDays")
     }
 
     // MARK: - Baby CRUD
