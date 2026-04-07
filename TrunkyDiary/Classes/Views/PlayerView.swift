@@ -25,26 +25,38 @@ final class PlayerView: UIView {
         try? session.setCategory(.playback, mode: .default, options: [])
         try? session.setActive(true)
 
-        let url = VideoCompressor.tempFileURL(from: data)
-        tempURL = url
+        // 파일 쓰기를 백그라운드에서 처리
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let url = VideoCompressor.tempFileURL(from: data)
 
-        let player = AVPlayer(url: url)
-        player.isMuted = isMuted
-        playerLayer.player = player
-        playerLayer.videoGravity = .resizeAspectFill
-        self.player = player
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.tempURL = url
 
-        // Loop
-        loopObserver = NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemDidPlayToEndTime,
-            object: player.currentItem,
-            queue: .main
-        ) { [weak player] _ in
-            player?.seek(to: .zero)
-            player?.play()
+                let asset = AVURLAsset(url: url)
+                let item = AVPlayerItem(asset: asset)
+                let player = AVPlayer(playerItem: item)
+                player.isMuted = self.isMuted
+                self.playerLayer.player = player
+                self.playerLayer.videoGravity = .resizeAspectFill
+                self.player = player
+
+                // 준비되면 재생
+                player.automaticallyWaitsToMinimizeStalling = false
+
+                // Loop
+                self.loopObserver = NotificationCenter.default.addObserver(
+                    forName: .AVPlayerItemDidPlayToEndTime,
+                    object: item,
+                    queue: .main
+                ) { [weak player] _ in
+                    player?.seek(to: .zero)
+                    player?.play()
+                }
+
+                player.play()
+            }
         }
-
-        player.play()
     }
 
     func pause() {
