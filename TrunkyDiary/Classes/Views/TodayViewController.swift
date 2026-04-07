@@ -579,7 +579,6 @@ class TodayViewController: UIViewController {
         }
 
         // Video autoplay
-        playerView?.cleanup()
         if let videoData = entry?.videoData {
             if playerView == nil, let container = photoImageView.superview {
                 let pv = PlayerView()
