@@ -252,7 +252,11 @@ final class VideoTrimViewController: UIViewController {
             player?.pause()
             isPlaying = false
         } else {
-            player?.seek(to: CMTime(seconds: trimStart, preferredTimescale: 600))
+            // 현재 위치에서 재생 (구간 밖이면 시작점으로)
+            let current = CMTimeGetSeconds(player?.currentTime() ?? .zero)
+            if current < trimStart || current >= trimEnd {
+                player?.seek(to: CMTime(seconds: trimStart, preferredTimescale: 600))
+            }
             player?.play()
             isPlaying = true
         }
