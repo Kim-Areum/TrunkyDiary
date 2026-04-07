@@ -20,6 +20,11 @@ final class PlayerView: UIView {
     func play(data: Data) {
         cleanup()
 
+        // 무음 모드에서도 볼륨 키로 소리 재생 가능하도록
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, mode: .default, options: [])
+        try? session.setActive(true)
+
         let url = VideoCompressor.tempFileURL(from: data)
         tempURL = url
 
