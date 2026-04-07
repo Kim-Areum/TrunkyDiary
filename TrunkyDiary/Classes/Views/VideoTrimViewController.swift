@@ -160,7 +160,7 @@ final class VideoTrimViewController: UIViewController {
 
         NSLayoutConstraint.activate([
             thumbnailStrip.topAnchor.constraint(equalTo: durationLabel.bottomAnchor, constant: 24),
-            thumbnailStrip.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 64),
+            thumbnailStrip.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 76),
             thumbnailStrip.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             thumbnailStrip.heightAnchor.constraint(equalToConstant: stripHeight),
         ])
@@ -216,7 +216,7 @@ final class VideoTrimViewController: UIViewController {
 
         NSLayoutConstraint.activate([
             playButton.centerYAnchor.constraint(equalTo: thumbnailStrip.centerYAnchor),
-            playButton.trailingAnchor.constraint(equalTo: thumbnailStrip.leadingAnchor, constant: -8),
+            playButton.trailingAnchor.constraint(equalTo: thumbnailStrip.leadingAnchor, constant: -14),
             playButton.widthAnchor.constraint(equalToConstant: 32),
             playButton.heightAnchor.constraint(equalToConstant: 32),
         ])
@@ -322,8 +322,11 @@ final class VideoTrimViewController: UIViewController {
             height: stripHeight + 8
         )
 
+        // 플레이헤드는 현재 재생 위치 (재생 중이 아니면 trimStart)
+        let currentTime = CMTimeGetSeconds(player?.currentTime() ?? .zero)
+        let playheadTime = (currentTime >= trimStart && currentTime <= trimEnd) ? currentTime : trimStart
         playheadView.frame = CGRect(
-            x: startX,
+            x: xForTime(playheadTime),
             y: thumbnailStrip.frame.minY - 6,
             width: 2,
             height: stripHeight + 12
