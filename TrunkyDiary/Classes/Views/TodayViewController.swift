@@ -94,7 +94,7 @@ class TodayViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopElephantAnimation()
-        playerView?.cleanup()
+        playerView?.pause()
     }
 
     // MARK: - Layout

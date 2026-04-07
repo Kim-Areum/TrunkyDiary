@@ -8,6 +8,7 @@ final class PlayerView: UIView {
 
     private var player: AVPlayer?
     private var loopObserver: Any?
+    private var currentDataHash: Int?
 
     var isMuted: Bool = true {
         didSet { player?.isMuted = isMuted }
@@ -24,15 +25,23 @@ final class PlayerView: UIView {
     // MARK: - Play
 
     func play(data: Data) {
+        let hash = data.hashValue
+
+        // 같은 동영상이면 처음부터 재생만
+        if hash == currentDataHash, player != nil, playerLayer.player != nil {
+            player?.seek(to: .zero)
+            player?.play()
+            return
+        }
+
         cleanup()
+        currentDataHash = hash
 
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .default, options: [])
         try? session.setActive(true)
 
         let url = VideoCompressor.cachedTempFileURL(from: data)
-
-        // player 생성 후 seek(0)으로 첫 프레임 확정, 그 다음 레이어 연결 + 재생
         let player = AVPlayer(url: url)
         player.isMuted = isMuted
         self.player = player
@@ -46,10 +55,9 @@ final class PlayerView: UIView {
             player?.play()
         }
 
-        // 첫 프레임을 먼저 seek으로 확정
+        // 첫 프레임 seek 후 레이어 연결 + 재생
         player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
             guard let self = self else { return }
-            // seek 완료 후 레이어에 연결 → 첫 프레임부터 깨끗하게 표시
             self.playerLayer.player = self.player
             self.playerLayer.videoGravity = .resizeAspectFill
             self.player?.play()
@@ -61,6 +69,7 @@ final class PlayerView: UIView {
     }
 
     func resume() {
+        player?.seek(to: .zero)
         player?.play()
     }
 
@@ -72,6 +81,7 @@ final class PlayerView: UIView {
         }
         playerLayer.player = nil
         player = nil
+        currentDataHash = nil
     }
 
     deinit {

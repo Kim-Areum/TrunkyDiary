@@ -478,10 +478,13 @@ class MinibookViewController: UIViewController {
 
     // MARK: - Render Page
 
+    private let reusablePlayerView = PlayerView()
+
     private func cleanupActivePlayer() {
-        activePlayerView?.cleanup()
-        activePlayerView?.removeFromSuperview()
+        reusablePlayerView.pause()
+        reusablePlayerView.removeFromSuperview()
         activePlayerView = nil
+        activeVideoMuteButton?.removeFromSuperview()
         activeVideoMuteButton = nil
     }
 
@@ -789,10 +792,11 @@ class MinibookViewController: UIViewController {
 
             // Video autoplay (preview only, not PDF)
             if !isExporting, let videoData = entry.videoData {
-                let pv = PlayerView()
+                let pv = reusablePlayerView
                 pv.translatesAutoresizingMaskIntoConstraints = false
                 pv.layer.cornerRadius = 4
                 pv.clipsToBounds = true
+                pv.isMuted = true
                 pageView.addSubview(pv)
                 NSLayoutConstraint.activate([
                     pv.topAnchor.constraint(equalTo: imageView.topAnchor),
