@@ -224,7 +224,10 @@ final class VideoTrimViewController: UIViewController {
         thumbnailStrip.addGestureRecognizer(stripTap)
     }
 
-    // MARK: - Play Button
+    private let muteButton = UIButton(type: .system)
+    private var isMuted = true
+
+    // MARK: - Play Button & Mute Button
 
     private func setupPlayButton() {
         playButton.tintColor = .white
@@ -233,12 +236,36 @@ final class VideoTrimViewController: UIViewController {
         playButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(playButton)
 
+        // 음소거 버튼
+        let muteIcon = UIImage(systemName: "speaker.slash.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12))
+        muteButton.setImage(muteIcon, for: .normal)
+        muteButton.tintColor = DS.fgMuted
+        muteButton.backgroundColor = DS.bgBase.withAlphaComponent(0.8)
+        muteButton.layer.cornerRadius = 14
+        muteButton.layer.borderWidth = 0.5
+        muteButton.layer.borderColor = DS.line.cgColor
+        muteButton.addTarget(self, action: #selector(muteTapped), for: .touchUpInside)
+        muteButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(muteButton)
+
         NSLayoutConstraint.activate([
             playButton.centerYAnchor.constraint(equalTo: thumbnailStrip.centerYAnchor),
             playButton.trailingAnchor.constraint(equalTo: thumbnailStrip.leadingAnchor, constant: -14),
             playButton.widthAnchor.constraint(equalToConstant: 32),
             playButton.heightAnchor.constraint(equalToConstant: 32),
+
+            muteButton.trailingAnchor.constraint(equalTo: playerView.trailingAnchor, constant: -8),
+            muteButton.bottomAnchor.constraint(equalTo: playerView.bottomAnchor, constant: -8),
+            muteButton.widthAnchor.constraint(equalToConstant: 28),
+            muteButton.heightAnchor.constraint(equalToConstant: 28),
         ])
+    }
+
+    @objc private func muteTapped() {
+        isMuted.toggle()
+        player?.isMuted = isMuted
+        let iconName = isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+        muteButton.setImage(UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 12)), for: .normal)
     }
 
     private func updatePlayButtonIcon() {
