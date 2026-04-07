@@ -8,6 +8,7 @@ final class PlayerView: UIView {
 
     private var player: AVPlayer?
     private var loopObserver: Any?
+    private var readyObserver: NSKeyValueObservation?
 
     var isMuted: Bool = true {
         didSet { player?.isMuted = isMuted }
@@ -31,22 +32,35 @@ final class PlayerView: UIView {
         try? session.setActive(true)
 
         let url = VideoCompressor.cachedTempFileURL(from: data)
-        let player = AVPlayer(url: url)
+        let item = AVPlayerItem(url: url)
+        let player = AVPlayer(playerItem: item)
         player.isMuted = isMuted
+        self.player = player
+
+        // playerLayer를 숨긴 상태로 연결
+        playerLayer.opacity = 0
         playerLayer.player = player
         playerLayer.videoGravity = .resizeAspectFill
-        self.player = player
 
         loopObserver = NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
-            object: player.currentItem,
+            object: item,
             queue: .main
         ) { [weak player] _ in
             player?.seek(to: .zero)
             player?.play()
         }
 
-        player.play()
+        // readyToPlay 후 첫 프레임 seek → 레이어 보이기 → 재생
+        readyObserver = item.observe(\.status, options: [.new]) { [weak self] item, _ in
+            guard item.status == .readyToPlay, let self = self else { return }
+            self.readyObserver = nil
+            self.player?.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
+                guard let self = self else { return }
+                self.playerLayer.opacity = 1
+                self.player?.play()
+            }
+        }
     }
 
     func pause() {
@@ -59,11 +73,14 @@ final class PlayerView: UIView {
 
     func cleanup() {
         player?.pause()
+        readyObserver?.invalidate()
+        readyObserver = nil
         if let observer = loopObserver {
             NotificationCenter.default.removeObserver(observer)
             loopObserver = nil
         }
         playerLayer.player = nil
+        playerLayer.opacity = 0
         player = nil
     }
 
