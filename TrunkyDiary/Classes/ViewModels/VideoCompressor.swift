@@ -127,6 +127,20 @@ final class VideoCompressor {
         return url
     }
 
+    /// data의 해시 기반 캐시 - 같은 데이터면 파일 재사용
+    static func cachedTempFileURL(from data: Data) -> URL {
+        let cacheDir = FileManager.default.temporaryDirectory.appendingPathComponent("video_cache")
+        if !FileManager.default.fileExists(atPath: cacheDir.path) {
+            try? FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+        }
+        let hash = data.hashValue
+        let url = cacheDir.appendingPathComponent("v_\(hash)").appendingPathExtension("mp4")
+        if !FileManager.default.fileExists(atPath: url.path) {
+            try? data.write(to: url)
+        }
+        return url
+    }
+
     // MARK: - Duration Check
 
     static func duration(of asset: PHAsset) -> TimeInterval {
