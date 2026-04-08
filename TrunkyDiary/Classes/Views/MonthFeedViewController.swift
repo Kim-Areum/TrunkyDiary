@@ -10,6 +10,7 @@ class MonthFeedViewController: UIViewController {
     var onDismiss: (() -> Void)?
 
     private let tableView = UITableView(frame: .zero, style: .grouped)
+    private var feedMuted = true // 피드 전체 음소거 상태
 
     // MARK: - Init
 
@@ -237,8 +238,18 @@ extension MonthFeedViewController: UITableViewDataSource {
         let entry = groupedEntries[indexPath.section].entries[indexPath.row]
         let baby = CoreDataStack.shared.fetchBaby()
         cell.configure(entry: entry, baby: baby)
+        cell.applyMuteState(feedMuted)
         cell.onAudioTapped = { [weak self] entry in
             self?.showPlaybackPopup(entry: entry)
+        }
+        cell.onMuteChanged = { [weak self] muted in
+            guard let self = self else { return }
+            self.feedMuted = muted
+            // 모든 보이는 동영상 셀에 적용
+            for visibleCell in self.tableView.visibleCells {
+                guard let feedCell = visibleCell as? FeedEntryCell, feedCell !== cell, feedCell.hasVideo else { continue }
+                feedCell.applyMuteState(muted)
+            }
         }
         return cell
     }
@@ -259,7 +270,7 @@ extension MonthFeedViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if let feedCell = cell as? FeedEntryCell {
-            feedCell.cleanupVideo()
+            feedCell.pauseVideo()
         }
     }
 
@@ -325,6 +336,7 @@ private class FeedEntryCell: UITableViewCell {
     private var videoPlayerView: PlayerView?
     private let videoMuteButton = UIButton(type: .system)
     var onAudioTapped: ((CDDiaryEntry) -> Void)?
+    var onMuteChanged: ((Bool) -> Void)? // true = muted
     private var currentEntry: CDDiaryEntry?
 
     private var photoHeightConstraint: NSLayoutConstraint?
@@ -521,10 +533,8 @@ private class FeedEntryCell: UITableViewCell {
                 videoPlayerView = pv
             }
             videoPlayerView?.isHidden = false
-            videoPlayerView?.isMuted = true
             videoPlayerView?.prepare(data: videoData) // 준비만, 재생은 playTopVisibleVideo에서
             videoMuteButton.isHidden = false
-            videoMuteButton.setImage(UIImage(systemName: "speaker.slash.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12)), for: .normal)
             innerClip.bringSubviewToFront(videoMuteButton)
             videoPlayIcon.isHidden = true
         } else {
@@ -593,6 +603,13 @@ private class FeedEntryCell: UITableViewCell {
             UIImage.SymbolConfiguration(pointSize: 12)
         )
         videoMuteButton.setImage(icon, for: .normal)
+        onMuteChanged?(pv.isMuted)
+    }
+
+    func applyMuteState(_ muted: Bool) {
+        videoPlayerView?.isMuted = muted
+        let iconName = muted ? "speaker.slash.fill" : "speaker.wave.2.fill"
+        videoMuteButton.setImage(UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 12)), for: .normal)
     }
 
     override func prepareForReuse() {
