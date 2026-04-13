@@ -1044,10 +1044,10 @@ class MinibookViewController: UIViewController {
             let data = renderer.pdfData { context in
                 for page in allPages {
                     context.beginPage()
-                    // 배경색으로 전체 채우기 (재단 영역 포함)
-                    UIColor(red: 255/255, green: 251/255, blue: 240/255, alpha: 1).setFill()
-                    UIRectFill(pageRect)
-                    // 미리보기를 완성 사이즈 영역에 그리기 (재단 여백 안쪽)
+                    // 재단 영역 포함 전체 배경색 채우기
+                    context.cgContext.setFillColor(DS.bgBase.cgColor)
+                    context.cgContext.fill(pageRect)
+                    // 콘텐츠는 완성 사이즈 영역에 그리기
                     if let image = self.renderPageToImage(page: page, size: renderSize, renderScale: 4.0) {
                         image.draw(in: contentRect)
                     }
