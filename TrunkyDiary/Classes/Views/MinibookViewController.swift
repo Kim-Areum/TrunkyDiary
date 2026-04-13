@@ -400,15 +400,41 @@ class MinibookViewController: UIViewController {
 
     // MARK: - Page Container
 
+    private let sizeInfoRow = UIStackView()
+
     private func setupPageContainer() {
         pageContainerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(pageContainerView)
+
+        // B7 사이즈 정보 + 안내 아이콘 (view에 직접 추가, 한 번만)
+        sizeInfoRow.axis = .horizontal
+        sizeInfoRow.spacing = 6
+        sizeInfoRow.alignment = .center
+        sizeInfoRow.isHidden = true
+        sizeInfoRow.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(sizeInfoRow)
+
+        let sizeLabel = UILabel()
+        sizeLabel.text = "B7  94 x 128 mm"
+        sizeLabel.font = DS.font(12)
+        sizeLabel.textColor = DS.fgPale
+        sizeInfoRow.addArrangedSubview(sizeLabel)
+
+        let infoButton = UIButton(type: .system)
+        let infoConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+        infoButton.setImage(UIImage(systemName: "info.circle", withConfiguration: infoConfig), for: .normal)
+        infoButton.tintColor = DS.fgPale
+        infoButton.addTarget(self, action: #selector(showB7InfoPopup), for: .touchUpInside)
+        sizeInfoRow.addArrangedSubview(infoButton)
 
         NSLayoutConstraint.activate([
             pageContainerView.topAnchor.constraint(equalTo: periodScrollView.bottomAnchor, constant: 40),
             pageContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             pageContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80),
+
+            sizeInfoRow.bottomAnchor.constraint(equalTo: pageContainerView.topAnchor, constant: -8),
+            sizeInfoRow.centerXAnchor.constraint(equalTo: view.centerXAnchor),
         ])
     }
 
@@ -483,6 +509,13 @@ class MinibookViewController: UIViewController {
         let pageHeight = pageWidth * 128.0 / 94.0
 
         let page = pages[currentPage]
+
+        // 커버일 때만 B7 사이즈 정보 표시
+        if case .cover = page {
+            sizeInfoRow.isHidden = false
+        } else {
+            sizeInfoRow.isHidden = true
+        }
 
         switch page {
         case .cover:
@@ -643,22 +676,7 @@ class MinibookViewController: UIViewController {
     }
 
     private func renderCoverPage(width: CGFloat, height: CGFloat) {
-        // B7 size label
-        let sizeLabel = UILabel()
-        sizeLabel.text = "B7  94 x 128 mm"
-        sizeLabel.font = DS.font(12)
-        sizeLabel.textColor = DS.fgPale
-        sizeLabel.textAlignment = .center
-        sizeLabel.translatesAutoresizingMaskIntoConstraints = false
-        pageContainerView.addSubview(sizeLabel)
-
         let pageView = makePageView(width: width, height: height)
-        pageView.clipsToBounds = true
-
-        NSLayoutConstraint.activate([
-            sizeLabel.bottomAnchor.constraint(equalTo: pageView.topAnchor, constant: -15),
-            sizeLabel.centerXAnchor.constraint(equalTo: pageContainerView.centerXAnchor),
-        ])
 
         // Cover photo
         if coverPhotoData == nil {
@@ -998,6 +1016,105 @@ class MinibookViewController: UIViewController {
         present(picker, animated: true)
     }
 
+    @objc private func showB7InfoPopup() {
+        let dim = UIView()
+        guard let window = view.window else { return }
+        dim.frame = window.bounds
+        dim.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        dim.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+        dim.tag = 8800
+        window.addSubview(dim)
+
+        let popup = UIView()
+        popup.backgroundColor = DS.bgBase
+        popup.layer.cornerRadius = 20
+        popup.layer.shadowColor = UIColor.black.cgColor
+        popup.layer.shadowOpacity = 0.15
+        popup.layer.shadowRadius = 12
+        popup.layer.shadowOffset = CGSize(width: 0, height: 4)
+        popup.translatesAutoresizingMaskIntoConstraints = false
+        dim.addSubview(popup)
+
+        let titleLabel = UILabel()
+        titleLabel.text = "미니북 안내"
+        titleLabel.font = DS.font(15)
+        titleLabel.textColor = DS.fgStrong
+        titleLabel.textAlignment = .center
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        popup.addSubview(titleLabel)
+
+        let bodyLabel = UILabel()
+        bodyLabel.numberOfLines = 0
+        bodyLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 6
+        let bodyText = """
+        📐 B7은 여권 사이즈 정도의 아담한 포켓 수첩 크기예요. (94 x 128mm)
+
+        📄 PDF 내보내기 시 3개 파일이 생성됩니다.
+
+        1. 합본 — 표지 + 내지 전체
+        2. 내지 — 본문 페이지만
+        3. 표지 펼침면 — 앞표지 + 책등 + 뒤표지
+
+        모든 파일에 인쇄용 재단 여백(사방 5mm)이 포함되어 있어요.
+        """
+        bodyLabel.attributedText = NSAttributedString(
+            string: bodyText,
+            attributes: [
+                .font: DS.font(13),
+                .foregroundColor: DS.fgNeutral,
+                .paragraphStyle: paragraphStyle,
+            ]
+        )
+        popup.addSubview(bodyLabel)
+
+        let closeBtn = UIButton(type: .system)
+        closeBtn.setTitle("확인", for: .normal)
+        closeBtn.titleLabel?.font = DS.font(14)
+        closeBtn.setTitleColor(DS.fgStrong, for: .normal)
+        closeBtn.backgroundColor = DS.accent
+        closeBtn.layer.cornerRadius = 12
+        closeBtn.translatesAutoresizingMaskIntoConstraints = false
+        closeBtn.addAction(UIAction { _ in
+            dim.removeFromSuperview()
+        }, for: .touchUpInside)
+        popup.addSubview(closeBtn)
+
+        NSLayoutConstraint.activate([
+            popup.centerXAnchor.constraint(equalTo: dim.centerXAnchor),
+            popup.centerYAnchor.constraint(equalTo: dim.centerYAnchor),
+            popup.widthAnchor.constraint(equalToConstant: 280),
+
+            titleLabel.topAnchor.constraint(equalTo: popup.topAnchor, constant: 24),
+            titleLabel.leadingAnchor.constraint(equalTo: popup.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: popup.trailingAnchor, constant: -20),
+
+            bodyLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            bodyLabel.leadingAnchor.constraint(equalTo: popup.leadingAnchor, constant: 20),
+            bodyLabel.trailingAnchor.constraint(equalTo: popup.trailingAnchor, constant: -20),
+
+            closeBtn.topAnchor.constraint(equalTo: bodyLabel.bottomAnchor, constant: 20),
+            closeBtn.leadingAnchor.constraint(equalTo: popup.leadingAnchor, constant: 20),
+            closeBtn.trailingAnchor.constraint(equalTo: popup.trailingAnchor, constant: -20),
+            closeBtn.heightAnchor.constraint(equalToConstant: 44),
+            closeBtn.bottomAnchor.constraint(equalTo: popup.bottomAnchor, constant: -20),
+        ])
+
+        let dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissB7Info(_:)))
+        dim.addGestureRecognizer(dismissTap)
+    }
+
+    @objc private func dismissB7Info(_ gesture: UITapGestureRecognizer) {
+        guard let dim = gesture.view else { return }
+        let location = gesture.location(in: dim)
+        for sub in dim.subviews {
+            if sub.frame.contains(location) { return }
+        }
+        dim.removeFromSuperview()
+    }
+
     @objc private func exportTapped() {
         guard !isExporting else { return }
 
@@ -1040,66 +1157,71 @@ class MinibookViewController: UIViewController {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
 
-            let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
-            let data = renderer.pdfData { context in
-                for page in allPages {
-                    context.beginPage()
-                    let cgContext = context.cgContext
+            // 페이지 렌더링 헬퍼
+            func renderPage(_ page: PageContent, in context: UIGraphicsPDFRendererContext) {
+                context.beginPage()
+                let cgContext = context.cgContext
+                DS.bgBase.setFill()
+                UIRectFill(pageRect)
 
-                    // 재단 영역 포함 전체 배경색 채우기
-                    cgContext.setFillColor(DS.bgBase.cgColor)
-                    cgContext.fill(pageRect)
-
-                    switch page {
-                    case .cover:
-                        // 커버: 사진은 재단 영역까지, 제목은 완성 영역 안
-                        if let data = self.coverPhotoData, let photo = UIImage(data: data) {
-                            Self.drawFill(photo, in: pageRect)
-                            // 하단 그라디언트
-                            let gradColors = [UIColor.clear.cgColor, UIColor(hex: "FFFBF0").withAlphaComponent(0.6).cgColor]
-                            let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: gradColors as CFArray, locations: [0.0, 1.0])!
-                            cgContext.drawLinearGradient(gradient, start: CGPoint(x: 0, y: pageRect.height * 0.5), end: CGPoint(x: 0, y: pageRect.height), options: [])
-                        } else {
-                            cgContext.setFillColor(DS.bgSubtle.cgColor)
-                            cgContext.fill(pageRect)
-                        }
-                        // 제목은 완성 영역 기준
-                        let baby = CoreDataStack.shared.fetchBaby()
-                        let title = "\(baby?.name ?? "")의 일기"
-                        let scale = contentRect.width / renderSize.width
-                        let titleAttrs: [NSAttributedString.Key: Any] = [
-                            .font: DS.font(16 * scale),
-                            .foregroundColor: DS.fgStrong,
-                        ]
-                        let titleSize = (title as NSString).size(withAttributes: titleAttrs)
-                        let titlePoint = CGPoint(
-                            x: contentRect.midX - titleSize.width / 2,
-                            y: contentRect.maxY - 30 * scale
-                        )
-                        (title as NSString).draw(at: titlePoint, withAttributes: titleAttrs)
-
-                    default:
-                        // 나머지 페이지는 콘텐츠 영역에 그리기
-                        if let image = self.renderPageToImage(page: page, size: renderSize, renderScale: 4.0) {
-                            image.draw(in: contentRect)
-                        }
+                switch page {
+                case .cover:
+                    if let image = self.renderPageToImage(page: page, size: renderSize, renderScale: 4.0) {
+                        image.draw(in: pageRect)
+                    }
+                default:
+                    if let image = self.renderPageToImage(page: page, size: renderSize, renderScale: 4.0) {
+                        cgContext.saveGState()
+                        cgContext.translateBy(x: bleedPt, y: bleedPt)
+                        let trimRect = CGRect(x: 0, y: 0, width: finishW * mmToPt, height: finishH * mmToPt)
+                        image.draw(in: trimRect)
+                        cgContext.restoreGState()
                     }
                 }
             }
 
-            let fileName = "\(babyName)의 일기.pdf"
-            let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
-            try? data.write(to: url)
+            let tmpDir = FileManager.default.temporaryDirectory
+            let combinedURL = tmpDir.appendingPathComponent("\(babyName)의 미니북_합본.pdf")
+            let innerURL = tmpDir.appendingPathComponent("\(babyName)의 미니북_내지.pdf")
+            let coverURL = tmpDir.appendingPathComponent("\(babyName)의 미니북_표지.pdf")
 
-            // 소프트커버 PDF (앞표지 + 책등 + 뒤표지 펼침)
-            let coverURL = self.exportSoftCoverPDF(babyName: babyName, contentRect: contentRect)
+            // 기존 파일 삭제
+            for url in [combinedURL, innerURL, coverURL] {
+                try? FileManager.default.removeItem(at: url)
+            }
+
+            // 내지 페이지만 (표지/뒷표지 제외)
+            let innerPages = allPages.filter {
+                switch $0 {
+                case .cover, .backCover: return false
+                default: return true
+                }
+            }
+
+            // 1) 합본 (표지 + 내지)
+            let combinedRenderer = UIGraphicsPDFRenderer(bounds: pageRect)
+            let combinedData = combinedRenderer.pdfData { context in
+                for page in allPages { renderPage(page, in: context) }
+            }
+            try? combinedData.write(to: combinedURL)
+
+            // 2) 내지만
+            let innerRenderer = UIGraphicsPDFRenderer(bounds: pageRect)
+            let innerData = innerRenderer.pdfData { context in
+                for page in innerPages { renderPage(page, in: context) }
+            }
+            try? innerData.write(to: innerURL)
+
+            // 3) 표지 펼침면
+            if let coverData = self.renderSoftCoverPDFData(babyName: babyName) {
+                try? coverData.write(to: coverURL)
+            }
 
             DispatchQueue.main.async {
                 self.isExporting = false
                 self.hideExportOverlay()
 
-                var items: [Any] = [url]
-                if let coverURL = coverURL { items.append(coverURL) }
+                let items: [Any] = [combinedURL, coverURL, innerURL]
                 let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
                 self.present(activityVC, animated: true)
             }
@@ -1108,7 +1230,7 @@ class MinibookViewController: UIViewController {
 
     // MARK: - Soft Cover PDF (펼침)
 
-    private func exportSoftCoverPDF(babyName: String, contentRect: CGRect) -> URL? {
+    private func renderSoftCoverPDFData(babyName: String) -> Data? {
         let mmToPt: CGFloat = 72.0 / 25.4
         let bleed: CGFloat = 5 // mm
         let finishW: CGFloat = 94 // mm
@@ -1143,33 +1265,16 @@ class MinibookViewController: UIViewController {
             cgContext.setFillColor(DS.bgBase.cgColor)
             cgContext.fill(pageRect)
 
-            // 앞표지 — 커버 사진 + 제목
-            if let data = coverPhotoData, let photo = UIImage(data: data) {
-                Self.drawFill(photo, in: frontRect)
-
-                // 하단 그라디언트
-                cgContext.saveGState()
-                cgContext.clip(to: frontRect)
-                let gradColors = [UIColor.clear.cgColor, UIColor(hex: "FFFBF0").withAlphaComponent(0.6).cgColor]
-                let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: gradColors as CFArray, locations: [0.0, 1.0])!
-                cgContext.drawLinearGradient(gradient, start: CGPoint(x: 0, y: frontRect.height * 0.5), end: CGPoint(x: 0, y: frontRect.height), options: [])
-                cgContext.restoreGState()
+            // 앞표지 — 미리보기와 동일하게 렌더링 후 frontRect에 채움
+            let coverRenderW = UIScreen.main.bounds.width * 0.8
+            let coverRenderH = coverRenderW * 128.0 / 94.0
+            let coverRenderSize = CGSize(width: coverRenderW, height: coverRenderH)
+            if let coverImage = self.renderPageToImage(page: .cover, size: coverRenderSize, renderScale: 4.0) {
+                coverImage.draw(in: frontRect)
             }
 
-            // 앞표지 제목 (완성 영역 기준)
             let baby = CoreDataStack.shared.fetchBaby()
-            let title = "\(baby?.name ?? "")의 일기"
-            let scale = frontContentRect.width / (UIScreen.main.bounds.width * 0.8)
-            let titleAttrs: [NSAttributedString.Key: Any] = [
-                .font: DS.font(16 * scale),
-                .foregroundColor: DS.fgStrong,
-            ]
-            let titleSize = (title as NSString).size(withAttributes: titleAttrs)
-            let titlePoint = CGPoint(
-                x: frontContentRect.midX - titleSize.width / 2,
-                y: frontContentRect.maxY - 30 * scale
-            )
-            (title as NSString).draw(at: titlePoint, withAttributes: titleAttrs)
+            let scale = frontRect.width / (UIScreen.main.bounds.width * 0.8)
 
             // 뒤표지 — 아기 사진 + 이름
             if let photoData = baby?.photoData, let photo = UIImage(data: photoData) {
@@ -1210,9 +1315,7 @@ class MinibookViewController: UIViewController {
             cgContext.restoreGState()
         }
 
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(babyName)의 일기_표지.pdf")
-        try? data.write(to: url)
-        return url
+        return data
     }
 
     /// PDF 컨텍스트에 직접 벡터로 그리기 (텍스트/뱃지 선명)
