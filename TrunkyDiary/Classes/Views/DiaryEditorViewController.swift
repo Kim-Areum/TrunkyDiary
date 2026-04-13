@@ -1,6 +1,4 @@
 import UIKit
-import Photos
-import AVFoundation
 import FoundationModels
 
 // MARK: - DiaryEditorViewController
@@ -16,8 +14,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
 
     private var text = ""
     private var photoData: Data?
-    private var videoData: Data?
-    private var videoThumbnailData: Data?
     private var audioFileNames: [String] = []
     private var audioTimestamps: [Date] = []
     private var isRecording = false
@@ -43,9 +39,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
     private let photoPlaceholderButton = UIButton(type: .system)
     private let photoDeleteButton = UIButton(type: .system)
     private let photoPickerButton = UIButton(type: .system)
-    private var videoPlayerView: PlayerView?
-    private let videoMuteButton = UIButton(type: .system)
-    private let videoPlayIcon = UIImageView()
     private let overlayStack = UIStackView()
 
     // Card body
@@ -87,11 +80,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
     required init?(coder: NSCoder) { fatalError() }
 
     // MARK: - Lifecycle
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        videoPlayerView?.pause()
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -295,7 +283,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         placeholderConfig.imagePlacement = .top
         placeholderConfig.imagePadding = 8
         placeholderConfig.baseForegroundColor = DS.fgPale
-        var attrTitle = AttributedString("사진/동영상 추가")
+        var attrTitle = AttributedString("사진 추가")
         attrTitle.font = DS.font(13)
         attrTitle.foregroundColor = DS.fgPale
         placeholderConfig.attributedTitle = attrTitle
@@ -489,7 +477,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
 
     private func updateDeleteButtonVisibility() {
         let entry = CoreDataStack.shared.fetchEntry(for: date)
-        let hasContent = entry != nil && (!entry!.text.isEmpty || entry!.photoData != nil || entry!.videoData != nil)
+        let hasContent = entry != nil && (!entry!.text.isEmpty || entry!.photoData != nil)
         deleteEntryButton.isHidden = !hasContent
     }
 
@@ -505,76 +493,16 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
 
     private func updatePhotoArea() {
         let hasPhoto = photoData != nil
-        let hasVideo = videoData != nil
-        let hasMedia = hasPhoto || hasVideo
 
         photoZoomScrollView.isHidden = !hasPhoto
-        photoPlaceholderButton.isHidden = hasMedia
-        photoDeleteButton.isHidden = !hasMedia
-        photoPickerButton.isHidden = !hasMedia
-
-        // 동영상 정리/표시
-        if hasVideo {
-            if videoPlayerView == nil {
-                let pv = PlayerView()
-                pv.translatesAutoresizingMaskIntoConstraints = false
-                pv.clipsToBounds = true
-                photoContainer.addSubview(pv)
-                NSLayoutConstraint.activate([
-                    pv.topAnchor.constraint(equalTo: photoContainer.topAnchor),
-                    pv.leadingAnchor.constraint(equalTo: photoContainer.leadingAnchor),
-                    pv.trailingAnchor.constraint(equalTo: photoContainer.trailingAnchor),
-                    pv.bottomAnchor.constraint(equalTo: photoContainer.bottomAnchor),
-                ])
-                videoPlayerView = pv
-
-                // 음소거 버튼 (삭제/사진첩 아이콘과 동일 사이즈, 좌하단)
-                let muteIcon = UIImage(systemName: "speaker.slash.fill")?.withConfiguration(
-                    UIImage.SymbolConfiguration(pointSize: 12)
-                )
-                videoMuteButton.setImage(muteIcon, for: .normal)
-                videoMuteButton.tintColor = DS.fgMuted
-                videoMuteButton.backgroundColor = DS.bgBase.withAlphaComponent(0.8)
-                videoMuteButton.layer.cornerRadius = 14
-                videoMuteButton.layer.borderWidth = 0.5
-                videoMuteButton.layer.borderColor = DS.line.cgColor
-                videoMuteButton.translatesAutoresizingMaskIntoConstraints = false
-                videoMuteButton.addTarget(self, action: #selector(toggleVideoMute), for: .touchUpInside)
-                photoContainer.addSubview(videoMuteButton)
-                NSLayoutConstraint.activate([
-                    videoMuteButton.leadingAnchor.constraint(equalTo: photoContainer.leadingAnchor, constant: 10),
-                    videoMuteButton.bottomAnchor.constraint(equalTo: photoContainer.bottomAnchor, constant: -8),
-                    videoMuteButton.widthAnchor.constraint(equalToConstant: 28),
-                    videoMuteButton.heightAnchor.constraint(equalToConstant: 28),
-                ])
-            }
-            videoPlayerView?.isHidden = false
-            videoPlayerView?.isMuted = true
-            videoMuteButton.isHidden = false
-            videoMuteButton.setImage(UIImage(systemName: "speaker.slash.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 12)), for: .normal)
-            videoPlayerView?.play(data: videoData!)
-            photoContainer.bringSubviewToFront(overlayStack)
-            photoContainer.bringSubviewToFront(videoMuteButton)
-        } else {
-            videoPlayerView?.cleanup()
-            videoPlayerView?.isHidden = true
-            videoMuteButton.isHidden = true
-        }
+        photoPlaceholderButton.isHidden = hasPhoto
+        photoDeleteButton.isHidden = !hasPhoto
+        photoPickerButton.isHidden = !hasPhoto
 
         if let data = photoData, let image = UIImage(data: data) {
             photoImageView.image = image
             photoZoomScrollView.zoomScale = 1.0
         }
-    }
-
-    @objc private func toggleVideoMute() {
-        guard let pv = videoPlayerView else { return }
-        pv.isMuted.toggle()
-        let iconName = pv.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
-        let icon = UIImage(systemName: iconName)?.withConfiguration(
-            UIImage.SymbolConfiguration(pointSize: 12)
-        )
-        videoMuteButton.setImage(icon, for: .normal)
     }
 
     private func updatePlaceholder() {
@@ -786,42 +714,16 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         let picker = CustomPhotoPickerViewController(date: date)
         picker.delegate = self
         picker.cropAspectRatio = 1.0 / 0.65
-        picker.includeVideo = true
         picker.modalPresentationStyle = .fullScreen
         present(picker, animated: true)
     }
 
     func photoPicker(_ picker: CustomPhotoPickerViewController, didSelect image: UIImage) {
         photoData = image.jpegData(compressionQuality: 0.8)
-        videoData = nil
-        videoThumbnailData = nil
         cropScale = 1.0
         cropOffset = .zero
         updatePhotoArea()
         updateDeleteButtonVisibility()
-    }
-
-    func photoPicker(_ picker: CustomPhotoPickerViewController, didSelectVideo asset: PHAsset, timeRange: CMTimeRange) {
-        // 압축 중 로딩 표시
-        let spinner = UIActivityIndicatorView(style: .large)
-        spinner.center = view.center
-        spinner.startAnimating()
-        view.addSubview(spinner)
-
-        VideoCompressor.compress(asset: asset, timeRange: timeRange) { [weak self] data in
-            guard let self = self else { return }
-
-            VideoCompressor.thumbnail(from: asset) { thumb in
-                spinner.removeFromSuperview()
-                guard let data = data else { return }
-
-                self.videoData = data
-                self.videoThumbnailData = thumb?.jpegData(compressionQuality: 0.8)
-                self.photoData = nil
-                self.updatePhotoArea()
-                self.updateDeleteButtonVisibility()
-            }
-        }
     }
 
     @objc private func deletePhotoTapped() {
@@ -944,8 +846,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         if let entry = CoreDataStack.shared.fetchEntry(for: date) {
             text = entry.text
             photoData = entry.photoData
-            videoData = entry.videoData
-            videoThumbnailData = entry.videoThumbnailData
             audioFileNames = entry.audioFileNamesArray
             audioTimestamps = entry.audioTimestampsArray
             textView.text = text
@@ -953,12 +853,9 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
     }
 
     private func save() {
-        videoPlayerView?.cleanup()
         if let entry = CoreDataStack.shared.fetchEntry(for: date) {
             entry.text = text
             entry.photoData = photoData
-            entry.videoData = videoData
-            entry.videoThumbnailData = videoThumbnailData
             entry.audioFileNamesArray = audioFileNames
             entry.audioTimestampsArray = audioTimestamps
             CoreDataStack.shared.save()
@@ -967,8 +864,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
                 date: date,
                 text: text,
                 photoData: photoData,
-                videoData: videoData,
-                videoThumbnailData: videoThumbnailData,
                 audioFileNames: audioFileNames,
                 audioTimestamps: audioTimestamps
             )
@@ -977,43 +872,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
     }
 
     // MARK: - Helpers
-
-    private func showVideoTrimToast() {
-        let toast = UILabel()
-        toast.text = "동영상은 최대 30초만 첨부돼요"
-        toast.font = DS.font(12)
-        toast.textColor = DS.fgStrong
-        toast.backgroundColor = DS.bgNeutral
-        toast.textAlignment = .center
-        toast.layer.cornerRadius = 12
-        toast.clipsToBounds = true
-        toast.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(toast)
-
-        NSLayoutConstraint.activate([
-            toast.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            toast.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 54),
-            toast.widthAnchor.constraint(greaterThanOrEqualToConstant: 100),
-            toast.heightAnchor.constraint(equalToConstant: 36),
-        ])
-        toast.layoutMargins = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        toast.frame.size.width += 32
-
-        toast.alpha = 0
-        toast.transform = CGAffineTransform(translationX: 0, y: -10)
-        UIView.animate(withDuration: 0.3) {
-            toast.alpha = 1
-            toast.transform = .identity
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            UIView.animate(withDuration: 0.25, animations: {
-                toast.alpha = 0
-                toast.transform = CGAffineTransform(translationX: 0, y: -10)
-            }) { _ in
-                toast.removeFromSuperview()
-            }
-        }
-    }
 
     private func formattedDate(_ date: Date) -> String {
         let f = DateFormatter()
@@ -1108,7 +966,7 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         popup.translatesAutoresizingMaskIntoConstraints = false
 
         let titleLabel = UILabel()
-        titleLabel.text = videoData != nil ? "동영상을 삭제할까요?" : "사진을 삭제할까요?"
+        titleLabel.text = "사진을 삭제할까요?"
         titleLabel.font = DS.font(14)
         titleLabel.textColor = DS.fgStrong
         titleLabel.textAlignment = .center
@@ -1144,8 +1002,6 @@ final class DiaryEditorViewController: UIViewController, CustomPhotoPickerDelega
         deleteButton.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             self.photoData = nil
-            self.videoData = nil
-            self.videoThumbnailData = nil
             self.cropScale = 1.0
             self.cropOffset = .zero
             self.updatePhotoArea()

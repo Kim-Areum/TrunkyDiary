@@ -344,11 +344,11 @@ extension AllEntriesViewController: UICollectionViewDelegateFlowLayout {
         }
 
         let entry = monthEntries[day]
-        let hasContent = entry != nil && (!entry!.text.isEmpty || entry!.photoData != nil || entry!.videoData != nil)
+        let hasContent = entry != nil && (!entry!.text.isEmpty || entry!.photoData != nil)
 
         if hasContent {
             let monthEntriesList = (1...daysInMonth).compactMap { monthEntries[$0] }
-                .filter { !$0.text.isEmpty || $0.photoData != nil || $0.videoData != nil }
+                .filter { !$0.text.isEmpty || $0.photoData != nil }
             let feedVC = MonthFeedViewController(entries: monthEntriesList, selectedDate: date)
             feedVC.modalPresentationStyle = .fullScreen
             feedVC.transitioningDelegate = PushTransitionManager.shared
@@ -586,9 +586,6 @@ private class CalendarDayCell: UICollectionViewCell {
         // 컨텐츠 표시
         if let entry = entry, !isFuture {
             if let data = entry.photoData, let image = UIImage(data: data) {
-                thumbnailImageView.image = image
-                thumbnailImageView.isHidden = false
-            } else if let data = entry.videoThumbnailData, let image = UIImage(data: data) {
                 thumbnailImageView.image = image
                 thumbnailImageView.isHidden = false
             }

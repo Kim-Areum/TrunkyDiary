@@ -62,9 +62,6 @@ class MinibookViewController: UIViewController {
     private let firstPageNoPhotoChars = 450
     private let continuationChars = 500
 
-    private var activePlayerView: PlayerView?
-    private var activeVideoMuteButton: UIButton?
-
     // UI
     private let pageContainerView = UIView()
     private let pageLabel = UILabel()
@@ -137,7 +134,7 @@ class MinibookViewController: UIViewController {
         for period in Period.allCases where period != .all {
             let hasData = allEntries.contains { entry in
                 let monthAge = baby.map { monthsBetween(from: $0.birthDate, to: entry.date) } ?? 0
-                return period.contains(monthAge: monthAge) && (!entry.text.isEmpty || entry.photoData != nil || entry.videoData != nil)
+                return period.contains(monthAge: monthAge) && (!entry.text.isEmpty || entry.photoData != nil)
             }
             if hasData { availablePeriods.append(period) }
         }
@@ -187,7 +184,7 @@ class MinibookViewController: UIViewController {
     private func buildPages() {
         pages = [.cover]
 
-        let validEntries = entries.filter { !$0.text.isEmpty || $0.photoData != nil || $0.videoData != nil }
+        let validEntries = entries.filter { !$0.text.isEmpty || $0.photoData != nil }
 
         if validEntries.isEmpty {
             pages.append(.empty)
@@ -208,7 +205,7 @@ class MinibookViewController: UIViewController {
                 }
 
                 let text = entry.text
-                let hasPhoto = entry.photoData != nil || entry.videoThumbnailData != nil
+                let hasPhoto = entry.photoData != nil
                 let pageWidth = UIScreen.main.bounds.width * 0.8
                 let textWidth = pageWidth - 40 // 좌우 패딩 24씩
 
@@ -478,28 +475,7 @@ class MinibookViewController: UIViewController {
 
     // MARK: - Render Page
 
-    private let reusablePlayerView = PlayerView()
-
-    private func cleanupActivePlayer() {
-        reusablePlayerView.pause()
-        reusablePlayerView.removeFromSuperview()
-        activePlayerView = nil
-        activeVideoMuteButton?.removeFromSuperview()
-        activeVideoMuteButton = nil
-    }
-
-    @objc private func toggleMinibookVideoMute() {
-        guard let pv = activePlayerView else { return }
-        pv.isMuted.toggle()
-        let iconName = pv.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
-        let icon = UIImage(systemName: iconName)?.withConfiguration(
-            UIImage.SymbolConfiguration(pointSize: 9)
-        )
-        activeVideoMuteButton?.setImage(icon, for: .normal)
-    }
-
     private func renderCurrentPage() {
-        cleanupActivePlayer()
         pageContainerView.subviews.forEach { $0.removeFromSuperview() }
         guard currentPage < pages.count else { return }
 
@@ -771,9 +747,8 @@ class MinibookViewController: UIViewController {
         var topAnchor = pageView.topAnchor
         var topConstant: CGFloat = 16
 
-        // Photo / Video thumbnail
-        let photoData = entry.photoData ?? entry.videoThumbnailData
-        if let data = photoData, let image = UIImage(data: data) {
+        // Photo
+        if let data = entry.photoData, let image = UIImage(data: data) {
             let imageView = UIImageView(image: image)
             imageView.contentMode = .scaleAspectFill
             imageView.clipsToBounds = true
@@ -789,42 +764,6 @@ class MinibookViewController: UIViewController {
             ])
             topAnchor = imageView.bottomAnchor
             topConstant = 14
-
-            // Video autoplay (preview only, not PDF)
-            if !isExporting, let videoData = entry.videoData {
-                let pv = reusablePlayerView
-                pv.translatesAutoresizingMaskIntoConstraints = false
-                pv.layer.cornerRadius = 4
-                pv.clipsToBounds = true
-                pv.isMuted = true
-                pageView.addSubview(pv)
-                NSLayoutConstraint.activate([
-                    pv.topAnchor.constraint(equalTo: imageView.topAnchor),
-                    pv.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
-                    pv.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
-                    pv.bottomAnchor.constraint(equalTo: imageView.bottomAnchor),
-                ])
-                pv.play(data: videoData)
-                activePlayerView = pv
-
-                // Mute button overlay
-                let muteBtn = UIButton(type: .system)
-                let muteConfig = UIImage.SymbolConfiguration(pointSize: 9)
-                muteBtn.setImage(UIImage(systemName: "speaker.slash.fill", withConfiguration: muteConfig), for: .normal)
-                muteBtn.tintColor = .white
-                muteBtn.backgroundColor = UIColor.black.withAlphaComponent(0.4)
-                muteBtn.layer.cornerRadius = 9
-                muteBtn.translatesAutoresizingMaskIntoConstraints = false
-                muteBtn.addTarget(self, action: #selector(toggleMinibookVideoMute), for: .touchUpInside)
-                pageView.addSubview(muteBtn)
-                NSLayoutConstraint.activate([
-                    muteBtn.trailingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: -8),
-                    muteBtn.bottomAnchor.constraint(equalTo: imageView.bottomAnchor, constant: -8),
-                    muteBtn.widthAnchor.constraint(equalToConstant: 18),
-                    muteBtn.heightAnchor.constraint(equalToConstant: 18),
-                ])
-                activeVideoMuteButton = muteBtn
-            }
         }
 
         // Date + D+ row
@@ -1062,7 +1001,7 @@ class MinibookViewController: UIViewController {
     @objc private func exportTapped() {
         guard !isExporting else { return }
 
-        let hasContent = entries.contains { !$0.text.isEmpty || $0.photoData != nil || $0.videoData != nil }
+        let hasContent = entries.contains { !$0.text.isEmpty || $0.photoData != nil }
         if !hasContent {
             let alert = CustomAlertView(title: "내보낼 기록이 없어요", message: "일기를 작성하면 미니북을 내보낼 수 있어요.", buttonText: "확인")
             alert.show(in: view)
@@ -1204,7 +1143,7 @@ class MinibookViewController: UIViewController {
         case .entryFirst(let entry, let textSlice, let num):
             var yOffset: CGFloat = margin
 
-            let entryPhotoData = entry.photoData ?? entry.videoThumbnailData
+            let entryPhotoData = entry.photoData
             if let data = entryPhotoData, let image = UIImage(data: data) {
                 let photoWidth = size.width - margin * 2
                 let photoHeight = photoWidth * 0.65
@@ -1427,7 +1366,7 @@ class MinibookViewController: UIViewController {
             case .entryFirst(let entry, let textSlice, let num):
                 var yOffset: CGFloat = margin
 
-                let entryPhotoData = entry.photoData ?? entry.videoThumbnailData
+                let entryPhotoData = entry.photoData
                 if let data = entryPhotoData, let image = UIImage(data: data) {
                     let photoWidth = size.width - margin * 2
                     let photoHeight = photoWidth * 0.65

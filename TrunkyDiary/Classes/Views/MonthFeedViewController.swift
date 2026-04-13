@@ -10,7 +10,6 @@ class MonthFeedViewController: UIViewController {
     var onDismiss: (() -> Void)?
 
     private let tableView = UITableView(frame: .zero, style: .grouped)
-    private static var feedMuted = true // 글로벌 음소거 상태
 
     // MARK: - Init
 
@@ -19,7 +18,7 @@ class MonthFeedViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
         // 전체 컨텐츠 있는 엔트리를 날짜 내림차순으로
         self.allEntries = CoreDataStack.shared.fetchEntries(sortAscending: false)
-            .filter { !$0.text.isEmpty || $0.photoData != nil || $0.videoData != nil }
+            .filter { !$0.text.isEmpty || $0.photoData != nil }
         groupByMonth()
     }
 
@@ -39,64 +38,6 @@ class MonthFeedViewController: UIViewController {
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.scrollToSelectedDate()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                self?.playTopVisibleVideo()
-            }
-        }
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        pauseAllVideos()
-        Self.feedMuted = true
-    }
-
-    // MARK: - Video Playback Control
-
-    private func pauseAllVideos() {
-        tableView.visibleCells.compactMap { $0 as? FeedEntryCell }.forEach { $0.muteAndPause() }
-    }
-
-    private func playTopVisibleVideo() {
-        let viewBounds = view.bounds
-
-        // 동영상 셀을 화면 위치 순서로 정렬 (위→아래)
-        var videoCells: [(cell: FeedEntryCell, visibleArea: CGFloat)] = []
-        for cell in tableView.visibleCells {
-            guard let feedCell = cell as? FeedEntryCell, feedCell.hasVideo else { continue }
-            let videoFrame = feedCell.videoAreaFrame(in: view)
-            let intersection = videoFrame.intersection(viewBounds)
-            let visibleArea = intersection.isNull ? 0 : intersection.height * intersection.width
-            if visibleArea > 0 {
-                videoCells.append((feedCell, visibleArea))
-            }
-        }
-
-        // 보이는 영역이 큰 것 우선, 같으면 위에 있는 것 우선
-        videoCells.sort {
-            if $0.visibleArea != $1.visibleArea {
-                return $0.visibleArea > $1.visibleArea
-            }
-            return $0.cell.frame.minY < $1.cell.frame.minY
-        }
-        let bestCell = videoCells.first?.cell
-
-        for (cell, _) in videoCells {
-            cell.isCellMuted = Self.feedMuted
-            cell.applyMuteState()
-            if cell === bestCell {
-                cell.resumeVideo()
-            } else {
-                cell.pauseVideo()
-            }
-        }
-
-        // 화면에서 벗어난 셀도 pause
-        for cell in tableView.visibleCells {
-            guard let feedCell = cell as? FeedEntryCell, feedCell.hasVideo else { continue }
-            if !videoCells.contains(where: { $0.cell === feedCell }) {
-                feedCell.pauseVideo()
-            }
         }
     }
 
@@ -164,7 +105,7 @@ class MonthFeedViewController: UIViewController {
 
     private func reloadAllEntries() {
         allEntries = CoreDataStack.shared.fetchEntries(sortAscending: false)
-            .filter { !$0.text.isEmpty || $0.photoData != nil || $0.videoData != nil }
+            .filter { !$0.text.isEmpty || $0.photoData != nil }
         groupByMonth()
         tableView.reloadData()
     }
@@ -241,21 +182,8 @@ extension MonthFeedViewController: UITableViewDataSource {
         let entry = groupedEntries[indexPath.section].entries[indexPath.row]
         let baby = CoreDataStack.shared.fetchBaby()
         cell.configure(entry: entry, baby: baby)
-        cell.isCellMuted = Self.feedMuted
-        cell.applyMuteState()
         cell.onAudioTapped = { [weak self] entry in
             self?.showPlaybackPopup(entry: entry)
-        }
-        cell.onMuteToggled = { [weak self] muted in
-            guard let self = self else { return }
-            Self.feedMuted = muted
-            // 모든 보이는 셀에 적용
-            self.tableView.visibleCells
-                .compactMap { $0 as? FeedEntryCell }
-                .forEach {
-                    $0.isCellMuted = muted
-                    $0.applyMuteState()
-                }
         }
         return cell
     }
@@ -272,16 +200,6 @@ extension MonthFeedViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         40
-    }
-
-    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if let feedCell = cell as? FeedEntryCell {
-            feedCell.pauseVideo()
-        }
-    }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        playTopVisibleVideo()
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -338,12 +256,7 @@ private class FeedEntryCell: UITableViewCell {
     private let dayCountLabel = UILabel()
     private let bodyTextLabel = UILabel()
     private let audioButton = UIButton(type: .system)
-    private let videoPlayIcon = UIImageView()
-    private var videoPlayerView: PlayerView?
-    private let videoMuteButton = UIButton(type: .system)
     var onAudioTapped: ((CDDiaryEntry) -> Void)?
-    var isCellMuted = true
-    var onMuteToggled: ((Bool) -> Void)? // true = muted
     private var currentEntry: CDDiaryEntry?
 
     private var photoHeightConstraint: NSLayoutConstraint?
@@ -468,49 +381,10 @@ private class FeedEntryCell: UITableViewCell {
             audioButton.bottomAnchor.constraint(lessThanOrEqualTo: bodyView.bottomAnchor),
         ])
 
-        // Video play icon overlay
-        let playConfig = UIImage.SymbolConfiguration(pointSize: 40)
-        videoPlayIcon.image = UIImage(systemName: "play.circle.fill", withConfiguration: playConfig)
-        videoPlayIcon.tintColor = .white
-        videoPlayIcon.alpha = 0.7
-        videoPlayIcon.isHidden = true
-        videoPlayIcon.translatesAutoresizingMaskIntoConstraints = false
-        innerClip.addSubview(videoPlayIcon)
-
-        NSLayoutConstraint.activate([
-            videoPlayIcon.centerXAnchor.constraint(equalTo: photoImageView.centerXAnchor),
-            videoPlayIcon.centerYAnchor.constraint(equalTo: photoImageView.centerYAnchor),
-        ])
-
-        // Video mute button overlay
-        let muteConfig = UIImage.SymbolConfiguration(pointSize: 12)
-        videoMuteButton.setImage(UIImage(systemName: "speaker.slash.fill", withConfiguration: muteConfig), for: .normal)
-        videoMuteButton.tintColor = DS.fgMuted
-        videoMuteButton.backgroundColor = DS.bgBase.withAlphaComponent(0.8)
-        videoMuteButton.layer.cornerRadius = 14
-        videoMuteButton.layer.borderWidth = 0.5
-        videoMuteButton.layer.borderColor = DS.line.cgColor
-        videoMuteButton.isHidden = true
-        videoMuteButton.translatesAutoresizingMaskIntoConstraints = false
-        videoMuteButton.addTarget(self, action: #selector(toggleFeedVideoMute), for: .touchUpInside)
-        innerClip.addSubview(videoMuteButton)
-
-        NSLayoutConstraint.activate([
-            videoMuteButton.trailingAnchor.constraint(equalTo: photoImageView.trailingAnchor, constant: -8),
-            videoMuteButton.bottomAnchor.constraint(equalTo: photoImageView.bottomAnchor, constant: -8),
-            videoMuteButton.widthAnchor.constraint(equalToConstant: 28),
-            videoMuteButton.heightAnchor.constraint(equalToConstant: 28),
-        ])
     }
 
     func configure(entry: CDDiaryEntry, baby: CDBaby?) {
         if let data = entry.photoData, let image = UIImage(data: data) {
-            photoImageView.image = image
-            photoImageView.isHidden = false
-            photoHeightConstraint?.isActive = true
-            bodyTopToPhoto?.isActive = true
-            bodyTopToCard?.isActive = false
-        } else if let data = entry.videoThumbnailData, let image = UIImage(data: data) {
             photoImageView.image = image
             photoImageView.isHidden = false
             photoHeightConstraint?.isActive = true
@@ -522,35 +396,6 @@ private class FeedEntryCell: UITableViewCell {
             photoHeightConstraint?.isActive = false
             bodyTopToPhoto?.isActive = false
             bodyTopToCard?.isActive = true
-        }
-
-        // Video playback
-        if let videoData = entry.videoData {
-            if videoPlayerView == nil {
-                let pv = PlayerView()
-                pv.translatesAutoresizingMaskIntoConstraints = false
-                pv.clipsToBounds = true
-                innerClip.addSubview(pv)
-                NSLayoutConstraint.activate([
-                    pv.topAnchor.constraint(equalTo: photoImageView.topAnchor),
-                    pv.leadingAnchor.constraint(equalTo: photoImageView.leadingAnchor),
-                    pv.trailingAnchor.constraint(equalTo: photoImageView.trailingAnchor),
-                    pv.bottomAnchor.constraint(equalTo: photoImageView.bottomAnchor),
-                ])
-                videoPlayerView = pv
-            }
-            videoPlayerView?.isHidden = false
-            videoPlayerView?.isMuted = isCellMuted
-            videoPlayerView?.prepare(data: videoData) // 준비만, 재생은 playTopVisibleVideo에서
-            videoMuteButton.isHidden = false
-            applyMuteState()
-            innerClip.bringSubviewToFront(videoMuteButton)
-            videoPlayIcon.isHidden = true
-        } else {
-            videoPlayerView?.cleanup()
-            videoPlayerView?.isHidden = true
-            videoMuteButton.isHidden = true
-            videoPlayIcon.isHidden = !entry.hasVideo
         }
 
         dateBadge.update(text: entry.formattedDate)
@@ -577,53 +422,10 @@ private class FeedEntryCell: UITableViewCell {
         onAudioTapped?(entry)
     }
 
-    var hasVideo: Bool { currentEntry?.hasVideo ?? false }
-
-    func videoAreaFrame(in targetView: UIView) -> CGRect {
-        photoImageView.convert(photoImageView.bounds, to: targetView)
-    }
-
-    func pauseVideo() {
-        videoPlayerView?.pause()
-    }
-
-    func resumeVideo() {
-        videoPlayerView?.playerLayer.player?.seek(to: .zero)
-        videoPlayerView?.playerLayer.player?.play()
-    }
-
-    func muteAndPause() {
-        videoPlayerView?.pause()
-        isCellMuted = true
-        applyMuteState()
-    }
-
-    func cleanupVideo() {
-        videoPlayerView?.cleanup()
-        videoPlayerView?.isHidden = true
-        videoMuteButton.isHidden = true
-    }
-
-    @objc private func toggleFeedVideoMute() {
-        isCellMuted.toggle()
-        applyMuteState()
-        onMuteToggled?(isCellMuted)
-    }
-
-    func applyMuteState() {
-        videoPlayerView?.isMuted = isCellMuted
-        let iconName = isCellMuted ? "speaker.slash.fill" : "speaker.wave.2.fill"
-        videoMuteButton.setImage(UIImage(systemName: iconName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 12)), for: .normal)
-    }
-
     override func prepareForReuse() {
         super.prepareForReuse()
         photoImageView.image = nil
         photoImageView.isHidden = true
-        videoPlayIcon.isHidden = true
-        videoPlayerView?.cleanup()
-        videoPlayerView?.isHidden = true
-        videoMuteButton.isHidden = true
         bodyTextLabel.text = nil
         audioButton.isHidden = true
         currentEntry = nil
