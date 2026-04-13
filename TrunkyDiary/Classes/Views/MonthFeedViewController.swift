@@ -272,10 +272,8 @@ private class FeedEntryCell: UITableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let bodyWidth = cardView.bounds.width - 24 // 12pt 패딩 좌우
-        if bodyWidth > 0 {
-            bodyTextLabel.preferredMaxLayoutWidth = bodyWidth
-        }
+        let bodyWidth = UIScreen.main.bounds.width * 0.85 - 32 // 카드 0.85 - 패딩 16*2
+        bodyTextLabel.preferredMaxLayoutWidth = bodyWidth
     }
 
     private func setupViews() {
@@ -364,9 +362,9 @@ private class FeedEntryCell: UITableViewCell {
             photoImageView.leadingAnchor.constraint(equalTo: innerClip.leadingAnchor),
             photoImageView.trailingAnchor.constraint(equalTo: innerClip.trailingAnchor),
 
-            bodyView.leadingAnchor.constraint(equalTo: innerClip.leadingAnchor, constant: 12),
-            bodyView.trailingAnchor.constraint(equalTo: innerClip.trailingAnchor, constant: -12),
-            bodyView.bottomAnchor.constraint(equalTo: innerClip.bottomAnchor, constant: -12),
+            bodyView.leadingAnchor.constraint(equalTo: innerClip.leadingAnchor, constant: 16),
+            bodyView.trailingAnchor.constraint(equalTo: innerClip.trailingAnchor, constant: -16),
+            bodyView.bottomAnchor.constraint(equalTo: innerClip.bottomAnchor, constant: -14),
 
             topRow.topAnchor.constraint(equalTo: bodyView.topAnchor),
             topRow.leadingAnchor.constraint(equalTo: bodyView.leadingAnchor),
@@ -404,7 +402,21 @@ private class FeedEntryCell: UITableViewCell {
             dayCountLabel.text = baby.dayAndMonthAt(date: entry.date)
         }
 
-        bodyTextLabel.text = entry.text
+        if !entry.text.isEmpty {
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.lineSpacing = 4
+            paragraphStyle.lineBreakMode = .byWordWrapping
+            bodyTextLabel.attributedText = NSAttributedString(
+                string: entry.text,
+                attributes: [
+                    .font: DS.font(15),
+                    .foregroundColor: DS.fgStrong,
+                    .paragraphStyle: paragraphStyle,
+                ]
+            )
+        } else {
+            bodyTextLabel.attributedText = nil
+        }
         bodyTextLabel.isHidden = entry.text.isEmpty
 
         currentEntry = entry
